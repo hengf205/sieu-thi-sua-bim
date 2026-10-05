@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trang Quản Trị - Hoàng Nam POS</title>
+  
+  <!-- PWA Meta & Manifest -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#1e293b"/>
+  <link rel="apple-touch-icon" href="icons/icon.svg"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* In-page authentication modal for admin page */
+    .admin-auth-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.95); z-index: 99999;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);
+    }
+    .admin-auth-box {
+      background: #1e293b; border: 1px solid rgba(255,255,255,.15); border-radius: 20px;
+      padding: 36px; width: 100%; max-width: 380px; text-align: center; color: #f1f5f9;
+      box-shadow: 0 24px 60px rgba(0,0,0,.6);
+    }
+    .admin-auth-icon {
+      width: 64px; height: 64px; background: rgba(5,150,105,.2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+      font-size: 1.6rem; color: #34d399;
+    }
+    .admin-auth-box h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+    .admin-auth-box p { font-size: .83rem; color: #94a3b8; margin-bottom: 20px; }
+    .admin-auth-box input {
+      width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08); color: #fff; font-size: 1.2rem; text-align: center;
+      letter-spacing: 4px; margin-bottom: 10px;
+    }
+    .admin-auth-box input:focus { outline: none; border-color: #34d399; }
+    .admin-auth-err { color: #f87171; font-size: .82rem; height: 18px; margin-bottom: 12px; }
+    .admin-auth-btns { display: flex; gap: 10px; }
+    .admin-auth-btns button, .admin-auth-btns a {
+      flex: 1; padding: 11px; border-radius: 10px; font-size: .88rem; font-weight: 700;
+      cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .admin-auth-btns .btn-back { background: rgba(255,255,255,.1); color: #94a3b8; }
+    .admin-auth-btns .btn-back:hover { background: rgba(255,255,255,.18); color: #fff; }
+    .admin-auth-btns .btn-login { background: #059669; color: #fff; }
+    .admin-auth-btns .btn-login:hover { background: #047857; }
+  </style>
+</head>
+<body>
+
+<!-- Admin Password Gate Modal (If not authenticated) -->
+<div class="admin-auth-overlay" id="adminAuthOverlay">
+  <div class="admin-auth-box">
+    <div class="admin-auth-icon"><i class="fas fa-shield-alt"></i></div>
+    <h3>Màn Hình Quản Trị</h3>
+    <p>Nhập mật khẩu để truy cập hệ thống quản trị</p>
+    <input type="password" id="adminGatePass" placeholder="••••" autocomplete="off" maxlength="32"/>
+    <div class="admin-auth-err" id="adminGateErr"></div>
+    <div class="admin-auth-btns">
+      <a href="ban-hang.html" class="btn-back"><i class="fas fa-arrow-left"></i> Bán hàng</a>
+      <button class="btn-login" id="btnAdminGateUnlock"><i class="fas fa-unlock"></i> Đăng nhập</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo"><i class="fas fa-shield-alt" style="color:#34d399"></i><span>QUẢN TRỊ</span></div>
+    <button class="icon-btn" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+  </div>
+  <ul class="nav-menu">
+    <li class="nav-item active" data-page="dashboard">
+      <i class="fas fa-chart-pie"></i><span>Tổng quan</span>
+    </li>
+    <li class="nav-item" data-page="products">
+      <i class="fas fa-box-open"></i><span>Quản lý sản phẩm</span>
+    </li>
+    <li class="nav-item" data-page="categories">
+      <i class="fas fa-tags"></i><span>Danh mục</span>
+    </li>
+    <li class="nav-item" data-page="orders">
+      <i class="fas fa-receipt"></i><span>Đơn hàng</span>
+    </li>
+    <li class="nav-item" data-page="reports">
+      <i class="fas fa-chart-bar"></i><span>Báo cáo doanh thu</span>
+    </li>
+    <li class="nav-item" data-page="settings">
+      <i class="fas fa-cog"></i><span>Cài đặt & Mật khẩu</span>
+    </li>
+  </ul>
+  <div class="sidebar-footer">
+    <a href="ban-hang.html" class="btn-goto-pos"><i class="fas fa-cash-register"></i> Mở Bán Hàng</a>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="main-content" id="mainContent">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+      <h2 class="page-title" id="pageTitle">Tổng quan</h2>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-fullscreen-top" onclick="toggleFullScreen()" title="Toàn màn hình" style="background:var(--bg);border:1px solid var(--border);padding:6px 12px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer">
+        <i class="fas fa-expand"></i> <span>Toàn màn hình</span>
+      </button>
+      <div class="clock" id="clock"></div>
+      <button class="btn-logout" id="btnLogout" title="Đăng xuất khỏi Quản trị"><i class="fas fa-sign-out-alt"></i> Thoát</button>
+    </div>
+  </header>
+
+  <div class="page-container">
+
+    <!-- ========== DASHBOARD ========== -->
+    <section class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card c-blue">
+          <div class="stat-ico"><i class="fas fa-dollar-sign"></i></div>
+          <div><p>Doanh thu hôm nay</p><h3 id="dToday">0 ₫</h3></div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-ico"><i class="fas fa-receipt"></i></div>
+          <div><p>Đơn hàng hôm nay</p><h3 id="dOrdersToday">0</h3></div>
+        </div>
+        <div class="stat-card c-orange">
+          <div class="stat-ico"><i class="fas fa-box"></i></div>
+          <div><p>Tổng số sản phẩm</p><h3 id="dProducts">0</h3></div>
+        </div>
+        <div class="stat-card c-purple">
+          <div class="stat-ico"><i class="fas fa-chart-line"></i></div>
+          <div><p>Doanh thu tháng này</p><h3 id="dMonth">0 ₫</h3></div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Doanh thu 7 ngày gần nhất</h3>
+          <canvas id="chartWeekly"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Top sản phẩm bán chạy</h3>
+          <canvas id="chartTopProd"></canvas>
+        </div>
+      </div>
+
+      <div class="card mt16">
+        <h3 class="card-title">Đơn hàng gần đây</h3>
+        <table class="tbl">
+          <thead><tr><th>Mã ĐH</th><th>Thời gian</th><th>Số SP</th><th>Tổng tiền</th><th>Thanh toán</th></tr></thead>
+          <tbody id="recentBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== PRODUCTS ========== -->
+    <section class="page" id="page-products">
+      <div class="page-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="prodSearch" placeholder="Tìm tên, mã SP hoặc mã vạch..."/>
+        </div>
+        <select id="prodCatFilter" class="select-input">
+          <option value="">Tất cả danh mục</option>
+        </select>
+        <button class="btn-primary" id="btnAddProd"><i class="fas fa-plus"></i> Thêm sản phẩm mới</button>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead>
+            <tr><th>Ảnh</th><th>Mã SP</th><th>Mã vạch (Barcode)</th><th>Tên sản phẩm</th><th>Danh mục</th><th>Giá nhập</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody id="prodTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== CATEGORIES ========== -->
+    <section class="page" id="page-categories">
+      <div class="page-bar">
+        <button class="btn-primary" id="btnAddCat"><i class="fas fa-plus"></i> Thêm danh mục</button>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Tên danh mục</th><th>Mô tả</th><th>Số SP</th><th>Thao tác</th></tr></thead>
+          <tbody id="catTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== ORDERS ========== -->
+    <section class="page" id="page-orders">
+      <div class="page-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="ordSearch" placeholder="Tìm mã đơn hàng..."/>
+        </div>
+        <input type="date" id="ordFrom" class="select-input" title="Từ ngày"/>
+        <input type="date" id="ordTo" class="select-input" title="Đến ngày"/>
+        <button class="btn-secondary" id="btnOrdFilter"><i class="fas fa-filter"></i> Lọc</button>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>Mã ĐH</th><th>Thời gian</th><th>SL SP</th><th>Tổng tiền</th><th>Thanh toán</th><th>Thao tác</th></tr></thead>
+          <tbody id="ordTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== REPORTS ========== -->
+    <section class="page" id="page-reports">
+      <div class="report-tabs" id="reportTabs">
+        <button class="rtab active" data-r="day">Theo ngày</button>
+        <button class="rtab" data-r="week">Theo tuần</button>
+        <button class="rtab" data-r="month">Theo tháng</button>
+        <button class="rtab" data-r="year">Theo năm</button>
+      </div>
+
+      <div class="report-filter card">
+        <div id="rfDay" class="rf-group"><label>Ngày:</label><input type="date" id="rDay"/></div>
+        <div id="rfWeek" class="rf-group hidden"><label>Tuần:</label><input type="week" id="rWeek"/></div>
+        <div id="rfMonth" class="rf-group hidden"><label>Tháng:</label><input type="month" id="rMonth"/></div>
+        <div id="rfYear" class="rf-group hidden"><label>Năm:</label><select id="rYear" class="select-input"></select></div>
+        <button class="btn-primary" id="btnGenReport"><i class="fas fa-chart-bar"></i> Xem báo cáo</button>
+        <button class="btn-secondary" id="btnExportCSV"><i class="fas fa-download"></i> Xuất CSV</button>
+      </div>
+
+      <div class="stat-grid" id="rptStats">
+        <div class="stat-card c-blue"><div class="stat-ico"><i class="fas fa-dollar-sign"></i></div><div><p>Doanh thu</p><h3 id="rRev">0 ₫</h3></div></div>
+        <div class="stat-card c-green"><div class="stat-ico"><i class="fas fa-receipt"></i></div><div><p>Số đơn</p><h3 id="rOrd">0</h3></div></div>
+        <div class="stat-card c-orange"><div class="stat-ico"><i class="fas fa-shopping-basket"></i></div><div><p>SP đã bán</p><h3 id="rItems">0</h3></div></div>
+        <div class="stat-card c-purple"><div class="stat-ico"><i class="fas fa-calculator"></i></div><div><p>Trung bình/đơn</p><h3 id="rAvg">0 ₫</h3></div></div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title" id="rChartTitle">Biểu đồ doanh thu</h3>
+        <canvas id="rChart" style="max-height:320px"></canvas>
+      </div>
+
+      <div class="card mt16">
+        <h3 class="card-title">Chi tiết đơn hàng trong kỳ</h3>
+        <table class="tbl">
+          <thead><tr><th>Mã ĐH</th><th>Thời gian</th><th>SL SP</th><th>Tổng tiền</th><th>Thanh toán</th></tr></thead>
+          <tbody id="rOrdBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== SETTINGS ========== -->
+    <section class="page" id="page-settings">
+      <div class="settings-wrap">
+        <div class="card settings-card">
+          <h3 class="card-title"><i class="fas fa-store"></i> Thông tin cửa hàng</h3>
+          <div class="form-g"><label>Tên cửa hàng</label><input type="text" id="sTenCH"/></div>
+          <div class="form-g"><label>Địa chỉ</label><input type="text" id="sDiaChi"/></div>
+          <div class="form-g"><label>Điện thoại</label><input type="text" id="sDT"/></div>
+          <div class="form-g"><label>Chân trang hóa đơn</label><textarea id="sFooter" rows="2"></textarea></div>
+          <button class="btn-primary" id="btnSaveSettings"><i class="fas fa-save"></i> Lưu thông tin</button>
+        </div>
+
+        <div class="card settings-card">
+          <h3 class="card-title"><i class="fas fa-key"></i> Đổi mật khẩu quản trị</h3>
+          <div class="form-g"><label>Mật khẩu quản trị hiện tại (hoặc mới)</label><input type="password" id="sAdminPass" placeholder="Nhập mật khẩu mới (Mặc định: 1234)"/></div>
+          <button class="btn-primary" id="btnSavePass"><i class="fas fa-shield-alt"></i> Đổi mật khẩu</button>
+
+          <hr style="margin:20px 0;border:0;border-top:1px solid var(--border)"/>
+
+          <h3 class="card-title"><i class="fas fa-database"></i> Sao lưu & Phục hồi dữ liệu</h3>
+          <div class="data-btns">
+            <button class="btn-secondary" id="btnExportData"><i class="fas fa-download"></i> Xuất dữ liệu (JSON)</button>
+            <button class="btn-secondary" id="btnImportData"><i class="fas fa-upload"></i> Nhập dữ liệu</button>
+            <input type="file" id="importFile" accept=".json" style="display:none"/>
+            <button class="btn-danger" id="btnReset"><i class="fas fa-trash-alt"></i> Xóa tất cả dữ liệu</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- page-container -->
+</main>
+
+<!-- Modal: Product Edit / Add -->
+<div class="overlay" id="modalProd">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <h3 id="modalProdTitle">Thêm sản phẩm mới</h3>
+      <button class="icon-btn" data-close="modalProd"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-bd">
+      <div class="prod-form-grid">
+        <!-- Image upload area -->
+        <div class="img-upload-area" id="imgUploadArea">
+          <div class="img-preview" id="imgPreview">
+            <i class="fas fa-image"></i>
+            <p>Nhấn để chọn ảnh</p>
+            <small>JPG, PNG, WEBP – max 2MB</small>
+          </div>
+          <input type="file" id="imgFile" accept="image/*" style="display:none"/>
+          <div class="img-btns">
+            <button class="btn-secondary btn-sm" id="btnPickImg"><i class="fas fa-upload"></i> Chọn ảnh</button>
+            <button class="btn-secondary btn-sm" id="btnClearImg"><i class="fas fa-times"></i> Xóa</button>
+          </div>
+          <div class="form-g mt8">
+            <label>Hoặc nhập URL ảnh</label>
+            <input type="text" id="prodImgUrl" placeholder="https://..."/>
+          </div>
+        </div>
+
+        <!-- Product Fields -->
+        <div class="prod-fields">
+          <div class="form-row">
+            <div class="form-g">
+              <label>Mã sản phẩm (Tự động)</label>
+              <input type="text" id="fCode" readonly placeholder="Hệ thống tự tạo" style="background:#f8fafc;font-weight:700;color:var(--primary)"/>
+            </div>
+            <div class="form-g">
+              <label><i class="fas fa-barcode"></i> Mã vạch (Quét từ máy)</label>
+              <input type="text" id="fBarcode" placeholder="Quét hoặc nhập mã vạch..."/>
+            </div>
+          </div>
+          <div class="form-g"><label>Tên sản phẩm *</label><input type="text" id="fName" placeholder="Ví dụ: Sữa Aptamil 1 400g"/></div>
+          <div class="form-row">
+            <div class="form-g"><label>Danh mục *</label><select id="fCat"></select></div>
+            <div class="form-g"><label>Đơn vị tính</label><input type="text" id="fUnit" placeholder="Hộp, gói, lốc..."/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-g"><label>Giá nhập (đ)</label><input type="number" id="fCost" min="0" placeholder="0"/></div>
+            <div class="form-g"><label>Giá bán (đ) *</label><input type="number" id="fPrice" min="0" placeholder="0"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-g"><label>Số lượng tồn kho</label><input type="number" id="fStock" min="0" placeholder="0"/></div>
+            <div class="form-g"><label>Cảnh báo tồn thấp</label><input type="number" id="fMinStock" min="0" placeholder="5"/></div>
+          </div>
+          <div class="form-g"><label>Mô tả sản phẩm</label><textarea id="fDesc" rows="2" placeholder="Ghi chú thêm..."></textarea></div>
+          <div class="form-g">
+            <label>Trạng thái kinh doanh</label>
+            <select id="fStatus">
+              <option value="active">Đang bán</option>
+              <option value="inactive">Ngừng bán</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-secondary" data-close="modalProd">Hủy</button>
+      <button class="btn-primary" id="btnSaveProd"><i class="fas fa-save"></i> Lưu sản phẩm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Category Add/Edit -->
+<div class="overlay" id="modalCat">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3 id="modalCatTitle">Thêm danh mục</h3>
+      <button class="icon-btn" data-close="modalCat"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-bd">
+      <div class="form-g"><label>Tên danh mục *</label><input type="text" id="cName" placeholder="Ví dụ: Sữa bột"/></div>
+      <div class="form-g"><label>Mô tả</label><textarea id="cDesc" rows="2" placeholder="Mô tả..."></textarea></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-secondary" data-close="modalCat">Hủy</button>
+      <button class="btn-primary" id="btnSaveCat">Lưu danh mục</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Order Detail -->
+<div class="overlay" id="modalOrdDetail">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <h3>Chi tiết đơn hàng – <span id="detailCode"></span></h3>
+      <button class="icon-btn" data-close="modalOrdDetail"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-bd" id="detailBody"></div>
+    <div class="modal-ft">
+      <button class="btn-secondary" data-close="modalOrdDetail">Đóng</button>
+      <button class="btn-primary" onclick="window.print()"><i class="fas fa-print"></i> In hóa đơn</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="overlay" id="modalConfirm">
+  <div class="modal modal-sm">
+    <div class="modal-hd">
+      <h3><i class="fas fa-exclamation-triangle" style="color:var(--warning)"></i> Xác nhận</h3>
+    </div>
+    <div class="modal-bd"><p id="confirmMsg"></p></div>
+    <div class="modal-ft">
+      <button class="btn-secondary" id="confirmNo">Hủy</button>
+      <button class="btn-danger" id="confirmYes">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+
+<script src="js/pwa-register.js"></script>
+<script src="js/data.js"></script>
+<script src="js/quan-tri.js"></script>
+<script>
+  // In-page password authentication handler (No redirects = No loops!)
+  function checkAdminGateAuth() {
+    const overlay = document.getElementById('adminAuthOverlay');
+    if (sessionStorage.getItem('pos_auth')) {
+      overlay.style.display = 'none';
+    } else {
+      overlay.style.display = 'flex';
+      setTimeout(() => document.getElementById('adminGatePass').focus(), 100);
+    }
+  }
+
+  document.getElementById('btnAdminGateUnlock').onclick = unlockAdminGate;
+  document.getElementById('adminGatePass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') unlockAdminGate();
+  });
+
+  function unlockAdminGate() {
+    const val = document.getElementById('adminGatePass').value;
+    let stored = '1234';
+    try {
+      const s = JSON.parse(localStorage.getItem('pos_set'));
+      if (s?.adminPass) stored = s.adminPass;
+    } catch {}
+
+    if (val === stored) {
+      sessionStorage.setItem('pos_auth', 'ok_' + Date.now());
+      document.getElementById('adminAuthOverlay').style.display = 'none';
+      toast('Đăng nhập quản trị thành công!', 's');
+    } else {
+      document.getElementById('adminGateErr').textContent = '❌ Mật khẩu không chính xác!';
+      document.getElementById('adminGatePass').value = '';
+      document.getElementById('adminGatePass').focus();
+    }
+  }
+
+  checkAdminGateAuth();
+</script>
+</body>
+</html>
