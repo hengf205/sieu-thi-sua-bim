@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bán Hàng Tại Quầy - Hoàng Nam POS</title>
+  
+  <!-- PWA Meta & Manifest -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#1e293b"/>
+  <link rel="apple-touch-icon" href="icons/icon.svg"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body class="pos-standalone-body">
+
+  <!-- ===== TOP HEADER ===== -->
+  <header class="pos-header">
+    <div class="header-left">
+      <div class="pos-logo">
+        <i class="fas fa-cash-register"></i>
+        <span>BÁN HÀNG TẠI QUẦY</span>
+      </div>
+      <span class="store-name-tag" id="storeNameTag">Siêu thị Sữa Bỉm Hoàng Nam</span>
+    </div>
+    <div class="header-center">
+      <div class="barcode-scanner-box">
+        <i class="fas fa-barcode scanner-icon"></i>
+        <input type="text" id="barcodeInput" placeholder="Quét mã vạch hoặc nhập tên SP rồi nhấn Enter..." autocomplete="off"/>
+        <button class="btn-scan-clear" id="btnClearScan" title="Xóa tìm kiếm"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-fullscreen-top" onclick="toggleFullScreen()" title="Toàn màn hình">
+        <i class="fas fa-expand"></i> <span>Toàn màn hình</span>
+      </button>
+      <div class="pos-clock" id="posClock"></div>
+      <a href="index.html" class="btn-admin-switch" title="Chuyển sang màn hình chọn/quản trị">
+        <i class="fas fa-user-shield"></i> <span>Quản trị</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== MAIN POS CONTENT ===== -->
+  <main class="pos-standalone-main">
+    <div class="pos-layout">
+
+      <!-- LEFT: Product Panel -->
+      <div class="pos-left">
+        <div class="pos-toolbar">
+          <div class="cat-bar" id="catBar">
+            <button class="cat-btn active" data-cat="all">Tất cả sản phẩm</button>
+          </div>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+
+      <!-- RIGHT: Cart Panel -->
+      <div class="pos-right">
+        <div class="cart-head">
+          <span class="cart-title"><i class="fas fa-shopping-cart"></i> Giỏ Hàng</span>
+          <button class="btn-icon-danger" id="clearCartBtn" title="Xóa giỏ"><i class="fas fa-trash"></i> Xóa giỏ</button>
+        </div>
+
+        <div class="cart-body" id="cartBody">
+          <div class="cart-empty">
+            <i class="fas fa-barcode"></i>
+            <p>Sử dụng máy quét mã vạch hoặc nhấn vào sản phẩm để thêm vào giỏ</p>
+          </div>
+        </div>
+
+        <div class="cart-foot">
+          <div class="summary">
+            <div class="sum-row"><span>Tạm tính</span><span id="sumSubtotal">0 ₫</span></div>
+            <div class="sum-row">
+              <span>Giảm giá</span>
+              <div class="disc-wrap">
+                <input type="number" id="discAmt" value="0" min="0" placeholder="0"/>
+                <select id="discType"><option value="amount">₫</option><option value="percent">%</option></select>
+              </div>
+            </div>
+            <div class="sum-row total-row"><span>TỔNG TIỀN</span><span id="sumTotal" class="total-val">0 ₫</span></div>
+
+            <!-- PAYMENT SELECTION (CASH & TRANSFER ONLY) -->
+            <div class="pay-methods-title">Phương thức thanh toán:</div>
+            <div class="pay-methods">
+              <button class="pay-btn active" data-m="cash"><i class="fas fa-money-bill-wave"></i> Tiền mặt</button>
+              <button class="pay-btn" data-m="transfer"><i class="fas fa-qrcode"></i> Chuyển khoản</button>
+            </div>
+
+            <!-- CASH PAYMENT CALCULATION SECTION -->
+            <div class="cash-calc-section" id="cashCalcSection">
+              <div class="sum-row">
+                <span>Khách đưa (đ):</span>
+                <input type="number" id="cashIn" placeholder="Nhập số tiền..." class="cash-inp"/>
+              </div>
+              
+              <!-- Quick money presets -->
+              <div class="cash-presets">
+                <button type="button" class="preset-btn" onclick="setExactCash()">Đủ tiền</button>
+                <button type="button" class="preset-btn" onclick="addPresetCash(50000)">50K</button>
+                <button type="button" class="preset-btn" onclick="addPresetCash(100000)">100K</button>
+                <button type="button" class="preset-btn" onclick="addPresetCash(200000)">200K</button>
+                <button type="button" class="preset-btn" onclick="addPresetCash(500000)">500K</button>
+              </div>
+
+              <div class="sum-row change-box">
+                <span class="change-lbl"><i class="fas fa-coins"></i> TIỀN THỪA TRẢ KHÁCH:</span>
+                <span id="sumChange" class="change-val">0 ₫</span>
+              </div>
+            </div>
+
+            <!-- TRANSFER PAYMENT INFO SECTION -->
+            <div class="transfer-info-section hidden" id="transferInfoSection">
+              <div class="transfer-box">
+                <i class="fas fa-qrcode transfer-qr-icon"></i>
+                <div>
+                  <p class="transfer-txt">Khách chuyển khoản số tiền:</p>
+                  <strong class="transfer-amt" id="transferAmtDisplay">0 ₫</strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <button class="btn-checkout" id="checkoutBtn">
+            <i class="fas fa-check-circle"></i> THANH TOÁN & IN HÓA ĐƠN
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal: Receipt -->
+  <div class="overlay" id="modalReceipt">
+    <div class="modal modal-receipt">
+      <div class="modal-hd">
+        <h3><i class="fas fa-receipt"></i> Hóa đơn thanh toán</h3>
+        <button class="icon-btn" data-close="modalReceipt"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-bd">
+        <div class="receipt" id="receiptEl"></div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn-secondary" data-close="modalReceipt">Đóng</button>
+        <button class="btn-primary" onclick="window.print()"><i class="fas fa-print"></i> In hóa đơn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="overlay" id="modalConfirm">
+    <div class="modal modal-sm">
+      <div class="modal-hd">
+        <h3><i class="fas fa-exclamation-triangle" style="color:var(--warning)"></i> Xác nhận</h3>
+      </div>
+      <div class="modal-bd"><p id="confirmMsg"></p></div>
+      <div class="modal-ft">
+        <button class="btn-secondary" id="confirmNo">Hủy</button>
+        <button class="btn-danger" id="confirmYes">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastWrap"></div>
+
+  <!-- Audio Beep for Scanner -->
+  <audio id="beepSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+  <script src="js/pwa-register.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ban-hang.js"></script>
+</body>
+</html>
