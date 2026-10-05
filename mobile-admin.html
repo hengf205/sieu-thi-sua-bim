@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Quản Trị Di Động - Hoàng Nam POS</title>
+  
+  <!-- PWA Meta & Manifest -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#1e293b"/>
+  <link rel="apple-touch-icon" href="icons/icon.svg"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* MOBILE ADMIN TAILORED STYLES */
+    body { background: #0f172a; color: #f1f5f9; padding-bottom: 70px; }
+    
+    .m-header {
+      position: sticky; top: 0; z-index: 1000; background: #1e293b;
+      padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.1); box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+    .m-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1rem; color: #60a5fa; }
+    .m-sync-badge { font-size: .72rem; color: #34d399; background: rgba(52,211,153,.15); padding: 4px 10px; border-radius: 99px; display: flex; align-items: center; gap: 5px; }
+    .m-sync-badge i { font-size: .6rem; }
+
+    .m-container { padding: 14px; }
+    .m-page { display: none; }
+    .m-page.active { display: block; }
+
+    /* Bottom Touch Navigation */
+    .m-bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #1e293b;
+      display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+      border-top: 1px solid rgba(255,255,255,.1); box-shadow: 0 -4px 16px rgba(0,0,0,.4);
+    }
+    .m-nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      color: #94a3b8; font-size: .72rem; font-weight: 600; text-decoration: none;
+      padding: 6px; flex: 1; text-align: center; border: none; background: transparent; cursor: pointer;
+    }
+    .m-nav-item i { font-size: 1.25rem; }
+    .m-nav-item.active { color: #60a5fa; }
+
+    /* Mobile Cards & List */
+    .m-card { background: #1e293b; border-radius: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,.08); }
+    .m-card-title { font-size: .95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    
+    .m-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .m-stat-item { background: #1e293b; border-radius: 12px; padding: 14px; border: 1px solid rgba(255,255,255,.08); }
+    .m-stat-item p { font-size: .74rem; color: #94a3b8; margin-bottom: 4px; }
+    .m-stat-item h4 { font-size: 1.05rem; font-weight: 800; color: #60a5fa; }
+
+    /* Product Mobile Card Item */
+    .m-prod-item {
+      background: rgba(255,255,255,.04); border-radius: 12px; padding: 12px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,.06);
+    }
+    .m-prod-thumb { width: 54px; height: 54px; border-radius: 10px; object-fit: cover; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #94a3b8; flex-shrink: 0; overflow: hidden; }
+    .m-prod-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .m-prod-info { flex: 1; min-width: 0; }
+    .m-prod-name { font-weight: 700; font-size: .88rem; color: #f1f5f9; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .m-prod-sub { font-size: .76rem; color: #94a3b8; display: flex; gap: 8px; align-items: center; }
+    .m-prod-price { font-weight: 800; color: #34d399; font-size: .92rem; }
+
+    .btn-m-add { background: #2563eb; color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: .9rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
+    
+    /* Password Gate */
+    .m-gate-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .m-gate-box { background: #1e293b; border-radius: 20px; padding: 32px 24px; text-align: center; width: 100%; max-width: 340px; border: 1px solid rgba(255,255,255,.1); }
+    .m-gate-box input { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font-size: 1.3rem; text-align: center; letter-spacing: 4px; margin: 16px 0; }
+  </style>
+</head>
+<body>
+
+<!-- Mobile Password Gate -->
+<div class="m-gate-overlay" id="mGateOverlay">
+  <div class="m-gate-box">
+    <i class="fas fa-mobile-alt" style="font-size:2.5rem;color:#60a5fa;margin-bottom:12px"></i>
+    <h3 style="font-size:1.1rem;font-weight:800">QUẢN TRỊ DI ĐỘNG</h3>
+    <p style="font-size:.8rem;color:#94a3b8;margin-top:4px">Nhập mật khẩu chủ cửa hàng (Mặc định: 1234)</p>
+    <input type="password" id="mGatePass" placeholder="••••" maxlength="32"/>
+    <div id="mGateErr" style="color:#f87171;font-size:.8rem;min-height:18px;margin-bottom:10px"></div>
+    <button class="btn-m-add" id="btnMGateUnlock" style="margin-bottom:0"><i class="fas fa-unlock"></i> Vào Quản Trị</button>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="m-header">
+  <div class="m-brand">
+    <i class="fas fa-store"></i>
+    <span>Hoàng Nam POS</span>
+  </div>
+  <div class="m-sync-badge">
+    <i class="fas fa-circle"></i> Đồng bộ PC
+  </div>
+</header>
+
+<!-- Main Pages -->
+<main class="m-container">
+
+  <!-- PAGE 1: DASHBOARD -->
+  <section class="m-page active" id="mpage-dash">
+    <div class="m-stat-grid">
+      <div class="m-stat-item">
+        <p>Doanh thu hôm nay</p>
+        <h4 id="mdToday">0 ₫</h4>
+      </div>
+      <div class="m-stat-item">
+        <p>Đơn hàng hôm nay</p>
+        <h4 id="mdOrders" style="color:#34d399">0</h4>
+      </div>
+      <div class="m-stat-item">
+        <p>Doanh thu tháng này</p>
+        <h4 id="mdMonth" style="color:#fbbf24">0 ₫</h4>
+      </div>
+      <div class="m-stat-item">
+        <p>Tổng số sản phẩm</p>
+        <h4 id="mdProds" style="color:#a78bfa">0</h4>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-title">Doanh thu 7 ngày gần nhất</div>
+      <canvas id="mChartWeekly" style="max-height:200px"></canvas>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-title">Đơn hàng mới nhất</div>
+      <div id="mRecentOrders"></div>
+    </div>
+  </section>
+
+  <!-- PAGE 2: PRODUCTS -->
+  <section class="m-page" id="mpage-prods">
+    <button class="btn-m-add" onclick="openMProdModal()"><i class="fas fa-plus"></i> Thêm sản phẩm mới (Có chụp ảnh)</button>
+    
+    <div class="search-box" style="margin-bottom:12px">
+      <i class="fas fa-search" style="color:#94a3b8"></i>
+      <input type="text" id="mProdSearch" placeholder="Tìm sản phẩm, mã vạch..." style="width:100%;background:#1e293b;color:#fff;border-color:rgba(255,255,255,.15)"/>
+    </div>
+
+    <div id="mProdList"></div>
+  </section>
+
+  <!-- PAGE 3: ORDERS -->
+  <section class="m-page" id="mpage-orders">
+    <div class="m-card-title">Lịch sử đơn hàng</div>
+    <div id="mOrderList"></div>
+  </section>
+
+  <!-- PAGE 4: SETTINGS -->
+  <section class="m-page" id="mpage-settings">
+    <div class="m-card">
+      <div class="m-card-title"><i class="fas fa-store"></i> Thông tin cửa hàng</div>
+      <div class="form-g"><label>Tên cửa hàng</label><input type="text" id="msTen" style="background:rgba(255,255,255,.06);color:#fff"/></div>
+      <div class="form-g"><label>Địa chỉ</label><input type="text" id="msDiaChi" style="background:rgba(255,255,255,.06);color:#fff"/></div>
+      <div class="form-g"><label>Điện thoại</label><input type="text" id="msDT" style="background:rgba(255,255,255,.06);color:#fff"/></div>
+      <button class="btn-m-add" onclick="saveMSettings()"><i class="fas fa-save"></i> Lưu thông tin</button>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-title"><i class="fas fa-key"></i> Mật khẩu quản trị</div>
+      <div class="form-g"><label>Mật khẩu mới</label><input type="password" id="msPass" style="background:rgba(255,255,255,.06);color:#fff"/></div>
+      <button class="btn-m-add" onclick="saveMPass()" style="background:#059669"><i class="fas fa-shield-alt"></i> Đổi mật khẩu</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Bottom Touch Navigation -->
+<nav class="m-bottom-nav">
+  <button class="m-nav-item active" data-mp="dash">
+    <i class="fas fa-chart-pie"></i>
+    <span>Tổng quan</span>
+  </button>
+  <button class="m-nav-item" data-mp="prods">
+    <i class="fas fa-box-open"></i>
+    <span>Sản phẩm</span>
+  </button>
+  <button class="m-nav-item" data-mp="orders">
+    <i class="fas fa-receipt"></i>
+    <span>Đơn hàng</span>
+  </button>
+  <button class="m-nav-item" data-mp="settings">
+    <i class="fas fa-cog"></i>
+    <span>Cài đặt</span>
+  </button>
+</nav>
+
+<!-- Modal: Add/Edit Product on Mobile (Supports Camera Photo Capture) -->
+<div class="overlay" id="modalMProd">
+  <div class="modal modal-lg" style="background:#1e293b;color:#fff">
+    <div class="modal-hd" style="border-color:rgba(255,255,255,.1)">
+      <h3 id="mProdModalTitle">Sản phẩm</h3>
+      <button class="icon-btn" data-close="modalMProd"><i class="fas fa-times" style="color:#fff"></i></button>
+    </div>
+    <div class="modal-bd">
+      <!-- Camera Upload -->
+      <div style="text-align:center;margin-bottom:14px">
+        <div class="img-preview" id="mImgPreview" style="margin:0 auto 8px;width:140px;height:140px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2)">
+          <i class="fas fa-camera" style="font-size:2rem;color:#94a3b8"></i>
+          <p style="font-size:.75rem">Chụp ảnh / Chọn ảnh</p>
+        </div>
+        <input type="file" id="mImgFile" accept="image/*" capture="environment" style="display:none"/>
+        <button class="btn-secondary btn-sm" onclick="document.getElementById('mImgFile').click()"><i class="fas fa-camera"></i> Chụp ảnh từ camera</button>
+      </div>
+
+      <div class="form-g"><label>Tên sản phẩm *</label><input type="text" id="mfName" style="background:rgba(255,255,255,.08);color:#fff"/></div>
+      <div class="form-g"><label>Mã vạch (Quét/Nhập)</label><input type="text" id="mfBarcode" style="background:rgba(255,255,255,.08);color:#fff"/></div>
+      <div class="form-row">
+        <div class="form-g"><label>Giá nhập (đ)</label><input type="number" id="mfCost" style="background:rgba(255,255,255,.08);color:#fff"/></div>
+        <div class="form-g"><label>Giá bán (đ) *</label><input type="number" id="mfPrice" style="background:rgba(255,255,255,.08);color:#fff"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-g"><label>Tồn kho</label><input type="number" id="mfStock" style="background:rgba(255,255,255,.08);color:#fff"/></div>
+        <div class="form-g"><label>Đơn vị tính</label><input type="text" id="mfUnit" style="background:rgba(255,255,255,.08);color:#fff"/></div>
+      </div>
+    </div>
+    <div class="modal-ft" style="border-color:rgba(255,255,255,.1)">
+      <button class="btn-secondary" data-close="modalMProd">Hủy</button>
+      <button class="btn-primary" onclick="saveMProd()"><i class="fas fa-save"></i> Lưu & Đồng bộ PC</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+
+<script src="js/network-config.js"></script>
+<script src="js/pwa-register.js"></script>
+<script src="js/data.js"></script>
+<script src="js/mobile-admin.js"></script>
+</body>
+</html>
