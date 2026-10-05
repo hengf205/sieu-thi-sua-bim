@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8"/>
@@ -125,14 +125,10 @@
 
           </div>
 
-          <button class="btn-checkout" id="checkoutBtn">
+          <div class="checkout-btn-group"><button class="btn-checkout" id="checkoutBtn">
             <i class="fas fa-check-circle"></i> THANH TOÁN & IN HÓA ĐƠN
           </button>
-        </div>
-      </div>
-
-    </div>
-  </main>
+        <button class="btn-debt" id="debtBtn"><i class="fas fa-clock"></i> GHI NỢ</button></div></div></div></main>
 
   <!-- Modal: Receipt -->
   <div class="overlay" id="modalReceipt">
@@ -164,6 +160,37 @@
       </div>
     </div>
   </div>
+  <!-- Modal: Ghi Nợ Khách Hàng -->
+  <div class="overlay" id="modalDebt">
+    <div class="modal modal-debt">
+      <div class="modal-hd">
+        <h3><i class="fas fa-clock" style="color:var(--warning)"></i> Ghi nợ khách hàng</h3>
+        <button class="icon-btn" data-close="modalDebt"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-bd">
+        <div class="debt-order-summary" id="debtOrderSummary"></div>
+        <div class="debt-form">
+          <div class="form-g">
+            <label><i class="fas fa-user"></i> Họ và tên khách hàng *</label>
+            <input type="text" id="debtName" placeholder="Nhập họ tên đầy đủ..." autocomplete="off"/>
+          </div>
+          <div class="form-g">
+            <label><i class="fas fa-phone"></i> Số điện thoại *</label>
+            <input type="tel" id="debtPhone" placeholder="Ví dụ: 0912 345 678..." autocomplete="off"/>
+          </div>
+          <div class="form-g">
+            <label><i class="fas fa-sticky-note"></i> Đặc điểm nhận biết (ghi chú)</label>
+            <textarea id="debtMemo" rows="3" placeholder="Ví dụ: Khách mặc áo xanh, hay mua sữa Aptamil, nhà gần đường X..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn-secondary" data-close="modalDebt">Hủy</button>
+        <button class="btn-warning" id="btnConfirmDebt"><i class="fas fa-check"></i> Xác nhận ghi nợ</button>
+      </div>
+    </div>
+  </div>
+
 
   <div id="toastWrap"></div>
 
