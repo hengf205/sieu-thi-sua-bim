@@ -284,6 +284,7 @@ function initCartListeners() {
   };
 
   document.getElementById('checkoutBtn').onclick = checkout;
+  document.getElementById('debtBtn').onclick = openDebtModal;
 
   // Switch between Cash & Bank Transfer
   document.querySelectorAll('.pay-btn').forEach(b => {
@@ -375,6 +376,75 @@ function initModals() {
   document.querySelectorAll('.overlay').forEach(o => o.onclick = e => { if (e.target === o) closeM(o.id) });
   document.getElementById('confirmNo').onclick = () => closeM('modalConfirm');
   document.getElementById('confirmYes').onclick = () => { closeM('modalConfirm'); if (confirmCb) { confirmCb(); confirmCb = null; } };
+  document.getElementById('btnConfirmDebt').onclick = confirmDebt;
+}
+
+/* ---- Debt (Ghi nợ) ---- */
+function openDebtModal() {
+  if (!cart.length) { toast('Giỏ hàng chưa có sản phẩm nào!', 'w'); return; }
+  const total = getCurrentTotal();
+  const sub = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const disc = sub - total;
+
+  // Build order summary
+  document.getElementById('debtOrderSummary').innerHTML = `
+    <div class="debt-sum-box">
+      <div class="debt-sum-title"><i class="fas fa-shopping-basket"></i> Tóm tắt đơn hàng nợ</div>
+      <div class="debt-sum-items">
+        ${cart.map(it => `<div class="debt-sum-row"><span>${it.name} × ${it.qty}</span><span>${fmt(it.price * it.qty)}</span></div>`).join('')}
+      </div>
+      ${disc > 0 ? `<div class="debt-sum-row" style="color:var(--success)"><span>Giảm giá</span><span>-${fmt(disc)}</span></div>` : ''}
+      <div class="debt-sum-total"><span>TỔNG NỢ</span><span>${fmt(total)}</span></div>
+    </div>`;
+
+  // Reset form
+  document.getElementById('debtName').value = '';
+  document.getElementById('debtPhone').value = '';
+  document.getElementById('debtMemo').value = '';
+
+  openM('modalDebt');
+  setTimeout(() => document.getElementById('debtName').focus(), 150);
+}
+
+function confirmDebt() {
+  const name = document.getElementById('debtName').value.trim();
+  const phone = document.getElementById('debtPhone').value.trim();
+  const memo = document.getElementById('debtMemo').value.trim();
+
+  if (!name) { toast('Vui lòng nhập họ tên khách hàng!', 'e'); document.getElementById('debtName').focus(); return; }
+  if (!phone) { toast('Vui lòng nhập số điện thoại!', 'e'); document.getElementById('debtPhone').focus(); return; }
+
+  const total = getCurrentTotal();
+  const sub = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const debt = DB.addDebt({
+    customerName: name,
+    customerPhone: phone,
+    customerMemo: memo,
+    items: cart.map(i => ({ pid: i.pid, name: i.name, price: i.price, qty: i.qty, unit: i.unit })),
+    sub,
+    disc: parseFloat(document.getElementById('discAmt').value) || 0,
+    discT: document.getElementById('discType').value,
+    total,
+  });
+
+  // Deduct stock
+  cart.forEach(it => {
+    const p = DB.getProd(it.pid);
+    if (p) DB.updProd(p.id, { stock: Math.max(0, (p.stock || 0) - it.qty) });
+  });
+
+  closeM('modalDebt');
+  toast(`✅ Đã ghi nợ: ${name} – ${fmt(total)} | Mã: ${debt.code}`, 's', 5000);
+
+  // Reset cart
+  cart = [];
+  renderCart();
+  document.getElementById('discAmt').value = 0;
+  document.getElementById('cashIn').value = '';
+  calcCart();
+  renderProdGrid();
+  document.getElementById('barcodeInput').focus();
 }
 
 function openM(id) { document.getElementById(id).classList.add('open') }
