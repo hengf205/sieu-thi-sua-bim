@@ -1,0 +1,18 @@
+{
+  "name": "Siêu thị Sữa Bỉm Hoàng Nam - POS",
+  "short_name": "Hoàng Nam POS",
+  "description": "Hệ thống Bán hàng tại quầy & Quản lý siêu thị sữa bỉm Hoàng Nam",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "512x512 192x192 128x128 64x64",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
