@@ -8,7 +8,8 @@ const DB = {
     PROD: 'pos_prod',
     ORD: 'pos_ord',
     SET: 'pos_set',
-    SEQ: 'pos_seq'
+    SEQ: 'pos_seq',
+    DEBT: 'pos_debt'
   },
 
   _cache: null,
@@ -33,7 +34,8 @@ const DB = {
       prod: this.getProds(),
       ord: this.getOrds(),
       set: this.getSet(),
-      seq: this._g(this.K.SEQ) || {}
+      seq: this._g(this.K.SEQ) || {},
+      debt: this.getDebts()
     };
 
     fetch('/api/data', {
@@ -56,6 +58,7 @@ const DB = {
           if (data.ord) { this._cache[this.K.ORD] = data.ord; localStorage.setItem(this.K.ORD, JSON.stringify(data.ord)); }
           if (data.set) { this._cache[this.K.SET] = data.set; localStorage.setItem(this.K.SET, JSON.stringify(data.set)); }
           if (data.seq) { this._cache[this.K.SEQ] = data.seq; localStorage.setItem(this.K.SEQ, JSON.stringify(data.seq)); }
+          if (data.debt) { this._cache[this.K.DEBT] = data.debt; localStorage.setItem(this.K.DEBT, JSON.stringify(data.debt)); }
           return true;
         }
       }
@@ -143,6 +146,30 @@ const DB = {
     return d;
   },
   getOrd(id) { return this.getOrds().find(o => o.id === id) || null },
+
+  /* ---- Debts (Công nợ) ---- */
+  getDebts() { return this._g(this.K.DEBT) || [] },
+  addDebt(d) {
+    const l = this.getDebts();
+    const seq = this.nextId('debt');
+    d.id = seq;
+    d.code = `CN${String(seq).padStart(5, '0')}`;
+    d.at = new Date().toISOString();
+    d.status = 'pending'; // pending | paid
+    d.paidAt = null;
+    d.note = d.note || '';
+    l.push(d);
+    this._s(this.K.DEBT, l);
+    return d;
+  },
+  updDebt(id, data) {
+    this._s(this.K.DEBT, this.getDebts().map(d => d.id === id ? { ...d, ...data } : d));
+  },
+  getDebt(id) { return this.getDebts().find(d => d.id === id) || null },
+  delDebt(id) { this._s(this.K.DEBT, this.getDebts().filter(d => d.id !== id)) },
+  markDebtPaid(id) {
+    this.updDebt(id, { status: 'paid', paidAt: new Date().toISOString() });
+  },
 
   /* ---- Settings ---- */
   getSet() {
