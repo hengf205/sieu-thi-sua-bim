@@ -1,0 +1,41 @@
+{
+  "cat": [
+    {
+      "name": "Sữa bột",
+      "desc": "",
+      "id": 1
+    },
+    {
+      "name": "Tã bỉm",
+      "desc": "",
+      "id": 2
+    },
+    {
+      "name": "Sữa nước",
+      "desc": "",
+      "id": 3
+    },
+    {
+      "name": "Ăn dặm",
+      "desc": "",
+      "id": 4
+    },
+    {
+      "name": "Đồ dùng cho bé",
+      "desc": "",
+      "id": 5
+    }
+  ],
+  "prod": [],
+  "ord": [],
+  "set": {
+    "name": "Siêu thị Sữa Bỉm Hoàng Nam",
+    "addr": "Trung Lạc-Yên Trung-Bắc Ninh",
+    "phone": "0833 398 3281",
+    "footer": "Cảm ơn quý khách và hẹn gặp lại!",
+    "adminPass": "1234"
+  },
+  "seq": {
+    "c": 5
+  }
+}
