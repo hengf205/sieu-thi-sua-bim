@@ -26,7 +26,50 @@
       "id": 5
     }
   ],
-  "prod": [],
+  "prod": [
+    {
+      "catId": 1,
+      "cost": 280000,
+      "id": 1,
+      "name": "Sữa bột mẫu 1",
+      "status": "active",
+      "barcode": "TEST000001",
+      "unit": "Hộp",
+      "minStock": 3,
+      "code": "SP00001",
+      "stock": 20,
+      "price": 350000,
+      "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
+    },
+    {
+      "catId": 2,
+      "cost": 180000,
+      "id": 2,
+      "name": "Tã bỉm mẫu M",
+      "status": "active",
+      "barcode": "TEST000002",
+      "unit": "Bịch",
+      "minStock": 5,
+      "code": "SP00002",
+      "stock": 30,
+      "price": 230000,
+      "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
+    },
+    {
+      "catId": 3,
+      "cost": 65000,
+      "id": 3,
+      "name": "Sữa nước mẫu",
+      "status": "active",
+      "barcode": "TEST000003",
+      "unit": "Lốc",
+      "minStock": 8,
+      "code": "SP00003",
+      "stock": 40,
+      "price": 85000,
+      "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
+    }
+  ],
   "ord": [],
   "set": {
     "name": "Siêu thị Sữa Bỉm Hoàng Nam",
@@ -36,7 +79,59 @@
     "adminPass": "1234"
   },
   "seq": {
-    "c": 5
+    "c": 5,
+    "p": 3,
+    "debt": 2,
+    "prod_code_seq": 3
   },
-  "debt": []
+  "debt": [
+    {
+      "discT": "amount",
+      "code": "CN00001",
+      "note": "",
+      "status": "pending",
+      "at": "2026-10-06T16:48:47.0692661Z",
+      "customerName": "Khách mẫu chưa thanh toán",
+      "sub": 350000,
+      "paidAt": null,
+      "customerMemo": "Dữ liệu thử nghiệm",
+      "total": 350000,
+      "items": [
+        {
+          "name": "Sữa bột mẫu 1",
+          "price": 350000,
+          "qty": 1,
+          "pid": 1,
+          "unit": "Hộp"
+        }
+      ],
+      "customerPhone": "0000000001",
+      "disc": 0,
+      "id": 1
+    },
+    {
+      "discT": "amount",
+      "code": "CN00002",
+      "note": "",
+      "status": "paid",
+      "at": "2026-10-06T16:48:47.0692661Z",
+      "customerName": "Khách mẫu đã thanh toán",
+      "sub": 460000,
+      "paidAt": "2026-10-06T16:48:47.0692661Z",
+      "customerMemo": "Dữ liệu thử nghiệm",
+      "total": 460000,
+      "items": [
+        {
+          "name": "Tã bỉm mẫu M",
+          "price": 230000,
+          "qty": 2,
+          "pid": 2,
+          "unit": "Bịch"
+        }
+      ],
+      "customerPhone": "0000000002",
+      "disc": 0,
+      "id": 2
+    }
+  ]
 }
