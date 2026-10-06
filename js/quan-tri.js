@@ -459,6 +459,12 @@ function viewOrd(id) {
       <div class="ord-meta-item"><label>Thời gian</label><strong>${dtStr(o.at)}</strong></div>
       <div class="ord-meta-item"><label>Thanh toán</label><strong>${payLbl(o.pay)}</strong></div>
       <div class="ord-meta-item"><label>Tổng tiền</label><strong style="color:var(--primary)">${fmt(o.total)}</strong></div>
+      ${o.customerName ? `<div class="ord-meta-item"><label>Khách hàng</label><strong>${escHtml(o.customerName)}</strong></div>` : ''}
+      ${o.customerPhone ? `<div class="ord-meta-item"><label>Số điện thoại</label><strong>${escHtml(o.customerPhone)}</strong></div>` : ''}
+      ${o.customerMemo ? `<div class="ord-meta-item"><label>Ghi nhớ</label><strong>${escHtml(o.customerMemo)}</strong></div>` : ''}
+      ${o.debtCode ? `<div class="ord-meta-item"><label>Chuyển từ khoản nợ</label><strong>${escHtml(o.debtCode)}</strong></div>` : ''}
+      <div class="ord-meta-item"><label>Khách thanh toán</label><strong>${fmt(o.cashIn)}</strong></div>
+      <div class="ord-meta-item"><label>Tiền thừa</label><strong>${fmt(o.change)}</strong></div>
     </div>
     <table class="tbl">
       <thead><tr><th>Sản phẩm</th><th>ĐVT</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
@@ -502,18 +508,21 @@ function renderDebtTable() {
     <td>${d.customerMemo ? escHtml(d.customerMemo) : '<span style="color:var(--muted)">—</span>'}</td>
     <td>${(d.items || []).map(i => `${escHtml(i.name)} × ${Number(i.qty || 0)}`).join('<br>')}</td>
     <td style="font-weight:700;color:var(--primary)">${fmt(d.total)}</td>
+    <td>${d.status === 'paid' ? payLbl(d.paidBy || 'cash') : `<select id="debtPayMethod-${Number(d.id)}" class="select-input" aria-label="Phương thức thu tiền"><option value="cash">Tiền mặt</option><option value="transfer">Chuyển khoản</option></select>`}</td>
     <td><span class="badge ${d.status === 'paid' ? 'b-green' : 'b-orange'}">${d.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</span>${d.paidAt ? `<br><small>${dtStr(d.paidAt)}</small>` : ''}</td>
-    <td>${d.status === 'paid' ? '—' : `<button class="btn-primary btn-sm" onclick="markDebtPaid(${Number(d.id)})"><i class="fas fa-check"></i> Đã thu tiền</button>`}</td>
-  </tr>`).join('') : '<tr><td colspan="7" class="empty-state">Chưa có khoản nợ phù hợp</td></tr>';
+    <td>${d.status === 'paid' ? (d.orderId ? `<button class="btn-secondary btn-sm" onclick="viewOrd(${Number(d.orderId)})"><i class="fas fa-file-invoice"></i> ${escHtml(d.orderCode || 'Xem hóa đơn')}</button>` : '—') : `<button class="btn-primary btn-sm" onclick="markDebtPaid(${Number(d.id)})"><i class="fas fa-check"></i> Đã thu tiền</button>`}</td>
+  </tr>`).join('') : '<tr><td colspan="8" class="empty-state">Chưa có khoản nợ phù hợp</td></tr>';
 }
 
 function markDebtPaid(id) {
   const debt = DB.getDebt(id);
   if (!debt || debt.status === 'paid') return;
-  doConfirm(`Xác nhận khách ${debt.customerName} đã thanh toán khoản nợ ${debt.code} (${fmt(debt.total)})?`, () => {
-    DB.markDebtPaid(id);
+  const paymentMethod = document.getElementById(`debtPayMethod-${id}`)?.value || 'cash';
+  doConfirm(`Xác nhận khách ${debt.customerName} đã thanh toán khoản nợ ${debt.code} (${fmt(debt.total)}) bằng ${payLbl(paymentMethod)}? Hệ thống sẽ tạo hóa đơn bán hàng.`, () => {
+    const order = DB.convertDebtToOrder(id, paymentMethod);
+    if (!order) return;
     renderDebtTable();
-    toast(`Đã cập nhật ${debt.code} thành đã thanh toán`, 's');
+    toast(`Đã tạo hóa đơn ${order.code} cho khoản nợ ${debt.code}`, 's');
   });
 }
 

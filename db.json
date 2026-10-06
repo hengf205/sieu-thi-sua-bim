@@ -2,27 +2,27 @@
   "cat": [
     {
       "name": "Sữa bột",
-      "desc": "",
+      "desc": "Danh mục mẫu Sữa bột",
       "id": 1
     },
     {
       "name": "Tã bỉm",
-      "desc": "",
+      "desc": "Danh mục mẫu Tã bỉm",
       "id": 2
     },
     {
       "name": "Sữa nước",
-      "desc": "",
+      "desc": "Danh mục mẫu Sữa nước",
       "id": 3
     },
     {
       "name": "Ăn dặm",
-      "desc": "",
+      "desc": "Danh mục mẫu Ăn dặm",
       "id": 4
     },
     {
       "name": "Đồ dùng cho bé",
-      "desc": "",
+      "desc": "Danh mục mẫu Đồ dùng cho bé",
       "id": 5
     }
   ],
@@ -37,7 +37,7 @@
       "unit": "Hộp",
       "minStock": 3,
       "code": "SP00001",
-      "stock": 20,
+      "stock": 17,
       "price": 350000,
       "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
     },
@@ -51,7 +51,7 @@
       "unit": "Bịch",
       "minStock": 5,
       "code": "SP00002",
-      "stock": 30,
+      "stock": 26,
       "price": 230000,
       "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
     },
@@ -65,12 +65,374 @@
       "unit": "Lốc",
       "minStock": 8,
       "code": "SP00003",
-      "stock": 40,
+      "stock": 37,
       "price": 85000,
       "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
+    },
+    {
+      "id": 4,
+      "barcode": "TEST000004",
+      "img": "",
+      "code": "SP00004",
+      "name": "Bánh ăn dặm mẫu",
+      "stock": 57,
+      "cost": 32000,
+      "price": 45000,
+      "status": "active",
+      "desc": "Sản phẩm mẫu cho danh mục ăn dặm",
+      "minStock": 8,
+      "unit": "Gói",
+      "catId": 4
+    },
+    {
+      "id": 5,
+      "barcode": "TEST000005",
+      "img": "",
+      "code": "SP00005",
+      "name": "Bình sữa mẫu",
+      "stock": 23,
+      "cost": 85000,
+      "price": 120000,
+      "status": "active",
+      "desc": "Sản phẩm mẫu cho danh mục đồ dùng",
+      "minStock": 4,
+      "unit": "Cái",
+      "catId": 5
+    },
+    {
+      "id": 6,
+      "barcode": "TEST000006",
+      "img": "",
+      "code": "SP00006",
+      "name": "Sữa bột mẫu số 2",
+      "stock": 11,
+      "cost": 340000,
+      "price": 420000,
+      "status": "active",
+      "desc": "Sữa bột mẫu để kiểm tra giá và tồn kho",
+      "minStock": 3,
+      "unit": "Hộp",
+      "catId": 1
+    },
+    {
+      "id": 7,
+      "barcode": "TEST000007",
+      "img": "",
+      "code": "SP00007",
+      "name": "Tã bỉm mẫu L",
+      "stock": 17,
+      "cost": 195000,
+      "price": 245000,
+      "status": "active",
+      "desc": "Sản phẩm mẫu kích cỡ L",
+      "minStock": 5,
+      "unit": "Bịch",
+      "catId": 2
+    },
+    {
+      "id": 8,
+      "barcode": "TEST000008",
+      "img": "",
+      "code": "SP00008",
+      "name": "Khăn ướt mẫu",
+      "stock": 30,
+      "cost": 25000,
+      "price": 38000,
+      "status": "active",
+      "desc": "Sản phẩm mẫu để kiểm tra bán hàng",
+      "minStock": 6,
+      "unit": "Gói",
+      "catId": 5
+    },
+    {
+      "id": 9,
+      "barcode": "TEST000009",
+      "img": "",
+      "code": "SP00009",
+      "name": "Cháo ăn dặm mẫu",
+      "stock": 20,
+      "cost": 17000,
+      "price": 28000,
+      "status": "active",
+      "desc": "Sản phẩm mẫu để kiểm tra bán hàng",
+      "minStock": 5,
+      "unit": "Hộp",
+      "catId": 4
     }
   ],
-  "ord": [],
+  "ord": [
+    {
+      "id": 1,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 440000,
+      "code": "HD00001",
+      "at": "2026-10-06T16:54:32.5314384Z",
+      "disc": 40000,
+      "items": [
+        {
+          "name": "Sữa bột mẫu 1",
+          "price": 350000,
+          "unit": "Hộp",
+          "pid": 1,
+          "qty": 1
+        },
+        {
+          "name": "Bánh ăn dặm mẫu",
+          "price": 45000,
+          "unit": "Gói",
+          "pid": 4,
+          "qty": 2
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "cash",
+      "cashIn": 500000,
+      "total": 400000,
+      "debtCode": "",
+      "change": 100000
+    },
+    {
+      "id": 2,
+      "customerMemo": "",
+      "discT": "percent",
+      "sub": 350000,
+      "code": "HD00002",
+      "at": "2026-10-06T13:54:32.5314384Z",
+      "disc": 35000,
+      "items": [
+        {
+          "name": "Tã bỉm mẫu M",
+          "price": 230000,
+          "unit": "Bịch",
+          "pid": 2,
+          "qty": 1
+        },
+        {
+          "name": "Bình sữa mẫu",
+          "price": 120000,
+          "unit": "Cái",
+          "pid": 5,
+          "qty": 1
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "transfer",
+      "cashIn": 315000,
+      "total": 315000,
+      "debtCode": "",
+      "change": 0
+    },
+    {
+      "id": 3,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 170000,
+      "code": "HD00003",
+      "at": "2026-10-05T16:54:32.5314384Z",
+      "disc": 0,
+      "items": [
+        {
+          "name": "Sữa nước mẫu",
+          "price": 85000,
+          "unit": "Lốc",
+          "pid": 3,
+          "qty": 2
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "cash",
+      "cashIn": 200000,
+      "total": 170000,
+      "debtCode": "",
+      "change": 30000
+    },
+    {
+      "id": 4,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 1505000,
+      "code": "HD00004",
+      "at": "2026-10-03T16:54:32.5314384Z",
+      "disc": 5000,
+      "items": [
+        {
+          "name": "Sữa bột mẫu số 2",
+          "price": 420000,
+          "unit": "Hộp",
+          "pid": 6,
+          "qty": 3
+        },
+        {
+          "name": "Tã bỉm mẫu L",
+          "price": 245000,
+          "unit": "Bịch",
+          "pid": 7,
+          "qty": 1
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "transfer",
+      "cashIn": 1500000,
+      "total": 1500000,
+      "debtCode": "",
+      "change": 0
+    },
+    {
+      "id": 5,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 114000,
+      "code": "HD00005",
+      "at": "2026-09-29T16:54:32.5314384Z",
+      "disc": 0,
+      "items": [
+        {
+          "name": "Khăn ướt mẫu",
+          "price": 38000,
+          "unit": "Gói",
+          "pid": 8,
+          "qty": 3
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "cash",
+      "cashIn": 114000,
+      "total": 114000,
+      "debtCode": "",
+      "change": 0
+    },
+    {
+      "id": 6,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 420000,
+      "code": "HD00006",
+      "at": "2026-08-27T16:54:32.5314384Z",
+      "disc": 0,
+      "items": [
+        {
+          "name": "Sữa bột mẫu số 2",
+          "price": 420000,
+          "unit": "Hộp",
+          "pid": 6,
+          "qty": 1
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "cash",
+      "cashIn": 470000,
+      "total": 420000,
+      "debtCode": "",
+      "change": 50000
+    },
+    {
+      "id": 7,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 56000,
+      "code": "HD00007",
+      "at": "2026-01-15T16:54:32.5370982Z",
+      "disc": 0,
+      "items": [
+        {
+          "name": "Cháo ăn dặm mẫu",
+          "price": 28000,
+          "unit": "Hộp",
+          "pid": 9,
+          "qty": 2
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "transfer",
+      "cashIn": 56000,
+      "total": 56000,
+      "debtCode": "",
+      "change": 0
+    },
+    {
+      "id": 8,
+      "customerMemo": "",
+      "discT": "amount",
+      "sub": 45000,
+      "code": "HD00008",
+      "at": "2025-12-21T16:54:32.5372346Z",
+      "disc": 0,
+      "items": [
+        {
+          "name": "Bánh ăn dặm mẫu",
+          "price": 45000,
+          "unit": "Gói",
+          "pid": 4,
+          "qty": 1
+        }
+      ],
+      "customerPhone": "",
+      "customerName": "",
+      "pay": "cash",
+      "cashIn": 45000,
+      "total": 45000,
+      "debtCode": "",
+      "change": 0
+    },
+    {
+      "id": 9,
+      "customerMemo": "Dữ liệu thử nghiệm",
+      "discT": "amount",
+      "sub": 460000,
+      "code": "HD00009",
+      "at": "2026-10-06T16:48:47.0692661Z",
+      "disc": 0,
+      "items": [
+        {
+          "name": "Tã bỉm mẫu M",
+          "price": 230000,
+          "unit": "Bịch",
+          "pid": 2,
+          "qty": 2
+        }
+      ],
+      "customerPhone": "0000000002",
+      "customerName": "Khách mẫu đã thanh toán",
+      "pay": "transfer",
+      "cashIn": 460000,
+      "total": 460000,
+      "debtCode": "CN00002",
+      "change": 0
+    },
+    {
+      "disc": 0,
+      "cashIn": 350000,
+      "at": "2026-10-06T16:49:40.981Z",
+      "sub": 350000,
+      "change": 0,
+      "discT": "amount",
+      "customerMemo": "Dữ liệu thử nghiệm",
+      "id": 10,
+      "customerPhone": "0000000001",
+      "items": [
+        {
+          "name": "Sữa bột mẫu 1",
+          "price": 350000,
+          "qty": 1,
+          "pid": 1,
+          "unit": "Hộp"
+        }
+      ],
+      "debtCode": "CN00001",
+      "customerName": "Khách mẫu chưa thanh toán",
+      "pay": "cash",
+      "code": "HD00010",
+      "total": 350000
+    }
+  ],
   "set": {
     "name": "Siêu thị Sữa Bỉm Hoàng Nam",
     "addr": "Trung Lạc-Yên Trung-Bắc Ninh",
@@ -80,9 +442,10 @@
   },
   "seq": {
     "c": 5,
-    "p": 3,
-    "debt": 2,
-    "prod_code_seq": 3
+    "p": 9,
+    "prod_code_seq": 9,
+    "debt": 4,
+    "o": 10
   },
   "debt": [
     {
@@ -107,7 +470,10 @@
       ],
       "customerPhone": "0000000001",
       "disc": 0,
-      "id": 1
+      "id": 1,
+      "paidBy": "cash",
+      "orderId": 10,
+      "orderCode": "HD00010"
     },
     {
       "discT": "amount",
@@ -131,7 +497,71 @@
       ],
       "customerPhone": "0000000002",
       "disc": 0,
-      "id": 2
+      "id": 2,
+      "paidBy": "transfer",
+      "orderId": 9,
+      "orderCode": "HD00009"
+    },
+    {
+      "customerPhone": "0000000003",
+      "orderCode": "",
+      "at": "2026-10-06T16:54:32.5314384Z",
+      "status": "pending",
+      "discT": "amount",
+      "paidAt": null,
+      "note": "Dữ liệu thử nghiệm",
+      "items": [
+        {
+          "name": "Bình sữa mẫu",
+          "price": 120000,
+          "unit": "Cái",
+          "pid": 5,
+          "qty": 1
+        }
+      ],
+      "paidBy": "",
+      "orderId": null,
+      "customerMemo": "Thường ghé buổi sáng",
+      "total": 120000,
+      "disc": 0,
+      "customerName": "Khách mẫu chờ thanh toán",
+      "id": 3,
+      "code": "CN00003",
+      "sub": 120000
+    },
+    {
+      "customerPhone": "0000000004",
+      "orderCode": "",
+      "at": "2026-10-06T16:54:32.5314384Z",
+      "status": "pending",
+      "discT": "amount",
+      "paidAt": null,
+      "note": "Dữ liệu thử nghiệm",
+      "items": [
+        {
+          "name": "Sữa nước mẫu",
+          "price": 85000,
+          "unit": "Lốc",
+          "pid": 3,
+          "qty": 1
+        },
+        {
+          "name": "Khăn ướt mẫu",
+          "price": 38000,
+          "unit": "Gói",
+          "pid": 8,
+          "qty": 2
+        }
+      ],
+      "paidBy": "",
+      "orderId": null,
+      "customerMemo": "Nhận biết: khách quen khu vực gần cửa hàng",
+      "total": 150000,
+      "disc": 11000,
+      "customerName": "Khách mẫu mua nhiều mặt hàng",
+      "id": 4,
+      "code": "CN00004",
+      "sub": 161000
     }
   ]
 }

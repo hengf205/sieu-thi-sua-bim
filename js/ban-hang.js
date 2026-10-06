@@ -321,7 +321,7 @@ function checkout() {
   const ord = DB.addOrd({
     items: cart.map(i => ({ pid: i.pid, name: i.name, price: i.price, qty: i.qty, unit: i.unit })),
     sub: cart.reduce((s, i) => s + i.price * i.qty, 0),
-    disc: parseFloat(document.getElementById('discAmt').value) || 0,
+    disc: cart.reduce((s, i) => s + i.price * i.qty, 0) - total,
     discT: document.getElementById('discType').value,
     total,
     pay: payMethod,
@@ -424,7 +424,7 @@ function confirmDebt() {
     customerMemo: memo,
     items: cart.map(i => ({ pid: i.pid, name: i.name, price: i.price, qty: i.qty, unit: i.unit })),
     sub,
-    disc: parseFloat(document.getElementById('discAmt').value) || 0,
+    disc: sub - total,
     discT: document.getElementById('discType').value,
     total,
   });

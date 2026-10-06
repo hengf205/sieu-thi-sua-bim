@@ -131,7 +131,7 @@ const DB = {
 
   /* ---- Orders ---- */
   getOrds() { return this._g(this.K.ORD) || [] },
-  addOrd(d) {
+  addOrd(d, { skipStock = false } = {}) {
     const l = this.getOrds();
     const seq = this.nextId('o');
     d.id = seq;
@@ -139,10 +139,12 @@ const DB = {
     d.at = new Date().toISOString();
     l.push(d);
     this._s(this.K.ORD, l);
-    d.items.forEach(i => {
-      const p = this.getProd(i.pid);
-      if (p) this.updProd(p.id, { stock: Math.max(0, (p.stock || 0) - i.qty) });
-    });
+    if (!skipStock) {
+      d.items.forEach(i => {
+        const p = this.getProd(i.pid);
+        if (p) this.updProd(p.id, { stock: Math.max(0, (p.stock || 0) - i.qty) });
+      });
+    }
     return d;
   },
   getOrd(id) { return this.getOrds().find(o => o.id === id) || null },
@@ -169,6 +171,26 @@ const DB = {
   delDebt(id) { this._s(this.K.DEBT, this.getDebts().filter(d => d.id !== id)) },
   markDebtPaid(id) {
     this.updDebt(id, { status: 'paid', paidAt: new Date().toISOString() });
+  },
+  convertDebtToOrder(id, paymentMethod = 'cash') {
+    const debt = this.getDebt(id);
+    if (!debt || debt.status === 'paid') return null;
+    const order = this.addOrd({
+      items: (debt.items || []).map(i => ({ ...i })),
+      sub: Number(debt.sub || debt.total || 0),
+      disc: Number(debt.disc || 0),
+      discT: debt.discT || 'amount',
+      total: Number(debt.total || 0),
+      pay: paymentMethod,
+      cashIn: Number(debt.total || 0),
+      change: 0,
+      customerName: debt.customerName || '',
+      customerPhone: debt.customerPhone || '',
+      customerMemo: debt.customerMemo || '',
+      debtCode: debt.code
+    }, { skipStock: true });
+    this.updDebt(id, { status: 'paid', paidAt: new Date().toISOString(), paidBy: paymentMethod, orderId: order.id, orderCode: order.code });
+    return order;
   },
 
   /* ---- Settings ---- */
