@@ -1,4 +1,6 @@
-const CACHE_NAME = 'hoangnam-pos-v1';
+// Bump this name whenever the app shell changes so installed clients discard
+// their previous UI and activate the updated files.
+const CACHE_NAME = 'hoangnam-pos-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -46,6 +48,25 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event - Serve from cache first, fallback to network
 self.addEventListener('fetch', (event) => {
+  const requestUrl = new URL(event.request.url);
+  // Always get same-origin app files from the running server first. This keeps
+  // POS installs up to date while retaining an offline fallback.
+  if (requestUrl.origin === self.location.origin && !requestUrl.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        if (event.request.headers.get('accept')?.includes('text/html')) return caches.match('./index.html');
+      }))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
