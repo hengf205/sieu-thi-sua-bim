@@ -125,12 +125,15 @@ async function openBarcodeScanner() {
   openM('modalBarcodeScanner');
   const status = document.getElementById('scannerStatus');
   const video = document.getElementById('barcodeVideo');
+  const videoWrap = video.closest('.scanner-video-wrap');
+  videoWrap.classList.remove('scanner-unavailable');
   status.textContent = 'Đang mở camera…';
 
   // Camera preview requires a secure origin. On a shop's local HTTP address,
   // continuous camera access is unavailable, so keep barcode text entry usable.
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
     status.textContent = 'Quét camera cần mở trang bằng HTTPS. Bạn vẫn có thể nhập mã ở ô tìm kiếm.';
+    videoWrap.classList.add('scanner-unavailable');
     return;
   }
 
@@ -160,6 +163,7 @@ async function openBarcodeScanner() {
     status.textContent = error.name === 'NotAllowedError'
       ? 'Camera đang bị từ chối quyền. Hãy cho phép camera cho trang này trong cài đặt trình duyệt rồi thử lại.'
       : 'Không mở được camera. Hãy kiểm tra quyền camera của trình duyệt và thử lại.';
+    videoWrap.classList.add('scanner-unavailable');
     console.warn('[POS] Camera scanner unavailable:', error);
   }
 }

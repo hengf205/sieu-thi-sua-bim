@@ -465,6 +465,7 @@ button{cursor:pointer;border:none}
 .modal-scanner{max-width:560px}
 .scanner-modal-body{display:flex;flex-direction:column;gap:12px}
 .scanner-video-wrap{position:relative;height:min(56vh,420px);min-height:220px;overflow:hidden;border-radius:12px;background:#0f172a}
+.scanner-video-wrap.scanner-unavailable{display:none}
 .scanner-video-wrap video{width:100%;height:100%;object-fit:cover}
 .scanner-reticle{position:absolute;left:8%;right:8%;top:35%;height:30%;border:2px solid rgba(255,255,255,.9);border-radius:12px;box-shadow:0 0 0 999px rgba(15,23,42,.18);pointer-events:none}
 .scanner-status{text-align:center;color:var(--muted);font-size:.86rem}
