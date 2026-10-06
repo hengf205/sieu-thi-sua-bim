@@ -28,14 +28,12 @@
     <div class="header-center">
       <div class="barcode-scanner-box">
         <i class="fas fa-barcode scanner-icon"></i>
-        <input type="text" id="barcodeInput" placeholder="Quét mã vạch hoặc nhập tên SP rồi nhấn Enter..." autocomplete="off"/>
+        <input type="text" id="barcodeInput" placeholder="Quét mã hoặc nhập tên sản phẩm..." autocomplete="off"/>
         <button class="btn-scan-clear" id="btnClearScan" title="Xóa tìm kiếm"><i class="fas fa-times"></i></button>
       </div>
+      <button class="btn-camera-scan" id="btnCameraScan" type="button"><i class="fas fa-camera"></i><span>Quét mã bằng camera</span></button>
     </div>
     <div class="header-right">
-      <button class="btn-fullscreen-top" onclick="toggleFullScreen()" title="Toàn màn hình">
-        <i class="fas fa-expand"></i> <span>Toàn màn hình</span>
-      </button>
       <div class="pos-clock" id="posClock"></div>
       <a href="index.html" class="btn-admin-switch" title="Chuyển sang màn hình chọn/quản trị">
         <i class="fas fa-user-shield"></i> <span>Quản trị</span>
@@ -129,6 +127,23 @@
             <i class="fas fa-check-circle"></i> THANH TOÁN & IN HÓA ĐƠN
           </button>
         <button class="btn-debt" id="debtBtn"><i class="fas fa-clock"></i> GHI NỢ</button></div></div></div></main>
+
+  <!-- Camera barcode scanner -->
+  <div class="overlay" id="modalBarcodeScanner">
+    <div class="modal modal-scanner">
+      <div class="modal-hd">
+        <h3><i class="fas fa-camera"></i> Quét mã vạch sản phẩm</h3>
+        <button class="icon-btn" data-close="modalBarcodeScanner" aria-label="Đóng máy quét"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-bd scanner-modal-body">
+        <div class="scanner-video-wrap"><video id="barcodeVideo" autoplay muted playsinline></video><div class="scanner-reticle" aria-hidden="true"></div></div>
+        <p id="scannerStatus" class="scanner-status">Đưa mã vạch vào khung để quét.</p>
+        <button class="btn-secondary scanner-capture-btn" id="btnCaptureBarcode" type="button"><i class="fas fa-camera"></i> Chụp mã vạch</button>
+        <input type="file" id="barcodeCaptureInput" accept="image/*" capture="environment" hidden />
+      </div>
+      <div class="modal-ft"><button class="btn-secondary" data-close="modalBarcodeScanner">Đóng máy quét</button></div>
+    </div>
+  </div>
 
   <!-- Modal: Receipt -->
   <div class="overlay" id="modalReceipt">

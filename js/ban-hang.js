@@ -53,7 +53,7 @@ function initScannerAndSearch() {
   const inp = document.getElementById('barcodeInput');
   const btnClear = document.getElementById('btnClearScan');
 
-  inp.focus();
+  if (!isScannerOpen()) inp.focus();
   document.addEventListener('click', (e) => {
     const isInteractive = ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName) || e.target.closest('.modal');
     if (!isInteractive) {
@@ -107,6 +107,168 @@ function initScannerAndSearch() {
     inp.focus();
     renderProdGrid();
   });
+
+  document.getElementById('btnCameraScan').addEventListener('click', openBarcodeScanner);
+  document.getElementById('btnCaptureBarcode').addEventListener('click', () => {
+    document.getElementById('barcodeCaptureInput').click();
+  });
+  document.getElementById('barcodeCaptureInput').addEventListener('change', handleBarcodeImage);
+}
+
+let barcodeStream = null;
+let barcodeScanFrame = null;
+let barcodeReaderControls = null;
+let barcodeDetecting = false;
+let zxingLoadPromise = null;
+
+function isScannerOpen() {
+  return document.getElementById('modalBarcodeScanner').classList.contains('open');
+}
+
+async function openBarcodeScanner() {
+  openM('modalBarcodeScanner');
+  const status = document.getElementById('scannerStatus');
+  const video = document.getElementById('barcodeVideo');
+  status.textContent = 'Đang mở camera…';
+
+  // Camera preview requires a secure origin. On a shop's local HTTP address,
+  // invoke the phone's rear-camera capture flow instead.
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+    status.textContent = 'Camera quét trực tiếp cần kết nối HTTPS. Bạn có thể chụp mã vạch để quét.';
+    document.getElementById('barcodeCaptureInput').click();
+    return;
+  }
+
+  try {
+    barcodeStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' } }
+    });
+    video.srcObject = barcodeStream;
+    await video.play();
+    if (!isScannerOpen()) { stopBarcodeScanner(); return; }
+    if ('BarcodeDetector' in window) {
+      let formats = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf', 'codabar'];
+      if (BarcodeDetector.getSupportedFormats) {
+        const supported = await BarcodeDetector.getSupportedFormats();
+        formats = formats.filter(format => supported.includes(format));
+      }
+      if (formats.length) {
+        const detector = new BarcodeDetector({ formats });
+        status.textContent = 'Đưa mã vạch vào khung để quét.';
+        scanVideoFrame(detector);
+        return;
+      }
+    }
+    await startZxingVideo(video);
+  } catch (error) {
+    status.textContent = error.name === 'NotAllowedError'
+      ? 'Bạn chưa cấp quyền camera. Hãy cho phép camera hoặc chụp mã vạch để quét.'
+      : 'Không mở được camera. Hãy chụp mã vạch hoặc nhập mã bằng bàn phím.';
+    console.warn('[POS] Camera scanner unavailable:', error);
+  }
+}
+
+async function scanVideoFrame(detector) {
+  if (!isScannerOpen() || !barcodeStream) return;
+  if (!barcodeDetecting) {
+    barcodeDetecting = true;
+    try {
+      const codes = await detector.detect(document.getElementById('barcodeVideo'));
+      if (codes.length && codes[0].rawValue) {
+        handleScannedBarcode(codes[0].rawValue);
+        return;
+      }
+    } catch (_) { /* Wait for the camera to produce a readable frame. */ }
+    barcodeDetecting = false;
+  }
+  barcodeScanFrame = requestAnimationFrame(() => scanVideoFrame(detector));
+}
+
+async function loadZxing() {
+  if (window.ZXingBrowser) return window.ZXingBrowser;
+  if (!zxingLoadPromise) {
+    zxingLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@zxing/browser@0.2.1';
+      script.onload = () => window.ZXingBrowser ? resolve(window.ZXingBrowser) : reject(new Error('ZXing unavailable'));
+      script.onerror = () => reject(new Error('Could not load barcode reader'));
+      document.head.appendChild(script);
+    });
+  }
+  return zxingLoadPromise;
+}
+
+async function startZxingVideo(video) {
+  const status = document.getElementById('scannerStatus');
+  status.textContent = 'Đang tải bộ đọc mã vạch…';
+  const zxing = await loadZxing();
+  if (!isScannerOpen()) return;
+  status.textContent = 'Đưa mã vạch vào khung để quét.';
+  const reader = new zxing.BrowserMultiFormatReader();
+  barcodeReaderControls = await reader.decodeFromVideoElement(video, result => {
+    if (result) handleScannedBarcode(result.getText());
+  });
+}
+
+async function handleBarcodeImage(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('scannerStatus');
+  const image = new Image();
+  const objectUrl = URL.createObjectURL(file);
+  image.onload = async () => {
+    try {
+      let result;
+      if ('BarcodeDetector' in window) {
+        const detector = new BarcodeDetector();
+        result = (await detector.detect(image))[0]?.rawValue;
+      }
+      if (!result) {
+        const zxing = await loadZxing();
+        const reader = new zxing.BrowserMultiFormatReader();
+        result = (await reader.decodeFromImageElement(image)).getText();
+      }
+      handleScannedBarcode(result);
+    } catch (_) {
+      status.textContent = 'Chưa đọc được mã. Hãy chụp rõ, đủ sáng và để mã nằm ngang.';
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+      event.target.value = '';
+    }
+  };
+  image.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    event.target.value = '';
+    status.textContent = 'Không đọc được ảnh. Hãy chụp lại mã vạch.';
+  };
+  image.src = objectUrl;
+}
+
+function handleScannedBarcode(code) {
+  if (!isScannerOpen()) return;
+  const product = DB.findProdByBarcodeOrCode(String(code).trim());
+  if (!product) {
+    document.getElementById('scannerStatus').textContent = `Không tìm thấy sản phẩm có mã ${code}. Bạn có thể thử lại.`;
+    return;
+  }
+  stopBarcodeScanner();
+  closeM('modalBarcodeScanner');
+  if ((product.stock || 0) <= 0) toast(`Sản phẩm "${product.name}" đã HẾT HÀNG!`, 'w');
+  else { addToCart(product.id); playBeep(); }
+  renderProdGrid();
+}
+
+function stopBarcodeScanner() {
+  if (barcodeScanFrame) cancelAnimationFrame(barcodeScanFrame);
+  barcodeScanFrame = null;
+  barcodeDetecting = false;
+  if (barcodeReaderControls) barcodeReaderControls.stop();
+  barcodeReaderControls = null;
+  if (barcodeStream) barcodeStream.getTracks().forEach(track => track.stop());
+  barcodeStream = null;
+  const video = document.getElementById('barcodeVideo');
+  if (video) video.srcObject = null;
 }
 
 function playBeep() {
@@ -459,7 +621,10 @@ function confirmDebt() {
 }
 
 function openM(id) { document.getElementById(id).classList.add('open') }
-function closeM(id) { document.getElementById(id).classList.remove('open') }
+function closeM(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modalBarcodeScanner') stopBarcodeScanner();
+}
 function doConfirm(msg, cb) {
   document.getElementById('confirmMsg').textContent = msg;
   confirmCb = cb;

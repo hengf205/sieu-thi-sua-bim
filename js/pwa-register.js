@@ -1,5 +1,5 @@
 /* ====================================================
-   PWA REGISTER & FULLSCREEN LOGIC (SAFE FILE:// & HTTP://)
+   PWA REGISTER LOGIC (SAFE FILE:// & HTTP://)
    ==================================================== */
 
 let deferredInstallPrompt = null;
@@ -47,22 +47,5 @@ function triggerPwaInstall() {
     });
   } else {
     alert('Hướng dẫn cài đặt App:\n- Trình duyệt Chrome/Edge/Cốc Cốc: Nhấn vào biểu tượng ⊕ (hoặc ba chấm ⋮) ở góc trên bên phải thanh địa chỉ -> Chọn "Cài đặt ứng dụng" (Install App).\n- Điện thoại Android / iPhone: Chọn Thêm vào Màn hình chính (Add to Home Screen).');
-  }
-}
-
-// Fullscreen Toggle
-function toggleFullScreen() {
-  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(err => console.log(err));
-    } else if (document.documentElement.webkitRequestFullscreen) {
-      document.documentElement.webkitRequestFullscreen();
-    }
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
   }
 }
