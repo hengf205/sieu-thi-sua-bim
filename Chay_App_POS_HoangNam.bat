@@ -15,7 +15,7 @@ if errorlevel 1 (
 )
 
 :: Reuse the server if one is already running on port 5000.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:5000/' -TimeoutSec 2; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$tcp = New-Object Net.Sockets.TcpClient; try { $tcp.Connect('127.0.0.1', 5000); exit 0 } catch { exit 1 } finally { $tcp.Close() }"
 if not errorlevel 1 goto OPEN_APP
 
 echo Dang khoi dong may chu tai http://localhost:5000 ...
@@ -23,7 +23,7 @@ start "Hoang Nam POS Server" /D "%~dp0" cmd /k node server.js
 
 :: Wait briefly for the server, then open the app.
 timeout /t 3 /nobreak >nul
-powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:5000/' -TimeoutSec 3; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$tcp = New-Object Net.Sockets.TcpClient; try { $tcp.Connect('127.0.0.1', 5000); exit 0 } catch { exit 1 } finally { $tcp.Close() }"
 if errorlevel 1 (
   echo May chu chua khoi dong duoc. Hay xem cua so Hoang Nam POS Server de biet loi.
   pause
