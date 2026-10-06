@@ -109,10 +109,6 @@ function initScannerAndSearch() {
   });
 
   document.getElementById('btnCameraScan').addEventListener('click', openBarcodeScanner);
-  document.getElementById('btnCaptureBarcode').addEventListener('click', () => {
-    document.getElementById('barcodeCaptureInput').click();
-  });
-  document.getElementById('barcodeCaptureInput').addEventListener('change', handleBarcodeImage);
 }
 
 let barcodeStream = null;
@@ -132,10 +128,9 @@ async function openBarcodeScanner() {
   status.textContent = 'Đang mở camera…';
 
   // Camera preview requires a secure origin. On a shop's local HTTP address,
-  // invoke the phone's rear-camera capture flow instead.
+  // continuous camera access is unavailable, so keep barcode text entry usable.
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-    status.textContent = 'Camera quét trực tiếp cần kết nối HTTPS. Bạn có thể chụp mã vạch để quét.';
-    document.getElementById('barcodeCaptureInput').click();
+    status.textContent = 'Quét camera cần mở trang bằng HTTPS. Bạn vẫn có thể nhập mã ở ô tìm kiếm.';
     return;
   }
 
@@ -163,8 +158,8 @@ async function openBarcodeScanner() {
     await startZxingVideo(video);
   } catch (error) {
     status.textContent = error.name === 'NotAllowedError'
-      ? 'Bạn chưa cấp quyền camera. Hãy cho phép camera hoặc chụp mã vạch để quét.'
-      : 'Không mở được camera. Hãy chụp mã vạch hoặc nhập mã bằng bàn phím.';
+      ? 'Camera đang bị từ chối quyền. Hãy cho phép camera cho trang này trong cài đặt trình duyệt rồi thử lại.'
+      : 'Không mở được camera. Hãy kiểm tra quyền camera của trình duyệt và thử lại.';
     console.warn('[POS] Camera scanner unavailable:', error);
   }
 }
@@ -209,40 +204,6 @@ async function startZxingVideo(video) {
   barcodeReaderControls = await reader.decodeFromVideoElement(video, result => {
     if (result) handleScannedBarcode(result.getText());
   });
-}
-
-async function handleBarcodeImage(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const status = document.getElementById('scannerStatus');
-  const image = new Image();
-  const objectUrl = URL.createObjectURL(file);
-  image.onload = async () => {
-    try {
-      let result;
-      if ('BarcodeDetector' in window) {
-        const detector = new BarcodeDetector();
-        result = (await detector.detect(image))[0]?.rawValue;
-      }
-      if (!result) {
-        const zxing = await loadZxing();
-        const reader = new zxing.BrowserMultiFormatReader();
-        result = (await reader.decodeFromImageElement(image)).getText();
-      }
-      handleScannedBarcode(result);
-    } catch (_) {
-      status.textContent = 'Chưa đọc được mã. Hãy chụp rõ, đủ sáng và để mã nằm ngang.';
-    } finally {
-      URL.revokeObjectURL(objectUrl);
-      event.target.value = '';
-    }
-  };
-  image.onerror = () => {
-    URL.revokeObjectURL(objectUrl);
-    event.target.value = '';
-    status.textContent = 'Không đọc được ảnh. Hãy chụp lại mã vạch.';
-  };
-  image.src = objectUrl;
 }
 
 function handleScannedBarcode(code) {

@@ -33,13 +33,15 @@
       "id": 1,
       "name": "Sữa bột mẫu 1",
       "status": "active",
-      "barcode": "TEST000001",
+      "barcode": "123456789012",
       "unit": "Hộp",
       "minStock": 3,
       "code": "SP00001",
       "stock": 16,
       "price": 350000,
-      "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
+      "desc": "Sản phẩm mẫu để kiểm tra bán hàng",
+      "min": 5,
+      "img": ""
     },
     {
       "catId": 2,
