@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshCatBar();
     renderProdGrid();
   });
+  DB.initRealtimeSync(() => {
+    loadStoreInfo();
+    refreshCatBar();
+    renderProdGrid();
+  });
 });
 
 /* ---- Clock ---- */

@@ -175,7 +175,7 @@ server.listen(PORT, '0.0.0.0', () => {
       const match = str.match(/https:\/\/[a-zA-Z0-9-]+\.loca\.lt/);
       if (match) {
         onlineUrl = match[0];
-        console.log(`- 4G/5G Internet Link: ${onlineUrl}/mobile-admin.html`);
+        console.log(`- 4G/5G Internet Link: ${onlineUrl}/quan-tri.html`);
         updateNetworkConfig();
         notifySseClients();
       }

@@ -43,10 +43,6 @@
     .lcard.admin i{color:#6ee7b7}
     .lcard.admin:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(5,150,105,.5)}
 
-    .lcard.mobile-admin{background:linear-gradient(135deg,#6d28d9,#7c3aed);box-shadow:0 8px 32px rgba(124,58,237,.4)}
-    .lcard.mobile-admin i{color:#c4b5fd}
-    .lcard.mobile-admin:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(124,58,237,.5)}
-
     /* NETWORK IP & 4G BANNER */
     .network-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 620px; width: 100%; margin-bottom: 16px; }
     .network-banner {
@@ -102,16 +98,10 @@
     <p>Thu ngân bán hàng tại quầy</p>
   </a>
   
-  <a href="mobile-admin.html" class="lcard mobile-admin">
-    <i class="fas fa-mobile-alt"></i>
-    <h2>Quản trị Điện thoại</h2>
-    <p>Giao diện tối ưu di động & Chụp ảnh SP</p>
-  </a>
-
   <button class="lcard admin" id="adminBtn">
     <i class="fas fa-shield-alt"></i>
-    <h2>Quản trị PC</h2>
-    <p>Quản lý toàn bộ trên Máy tính</p>
+    <h2>Quản trị</h2>
+    <p>Quản lý sản phẩm, đơn hàng, công nợ và báo cáo trên mọi thiết bị</p>
   </button>
 </div>
 
@@ -120,7 +110,7 @@
   <div class="network-banner">
     <div class="network-banner-title"><i class="fas fa-wifi"></i> KẾT NỐI WI-FI NỘI BỘ</div>
     <div class="network-desc">Khi điện thoại bắt chung Wi-Fi tại cửa hàng:</div>
-    <div class="network-url-box" id="wifiUrlBox">http://...:5000/mobile-admin.html</div>
+    <div class="network-url-box" id="wifiUrlBox">http://...:5000/quan-tri.html</div>
   </div>
 
   <div class="network-banner" style="border-color:rgba(52,211,153,.4)">
@@ -153,10 +143,10 @@
 <script>
 function renderNetworkUrls() {
   if (window.POS_NETWORK_IP) {
-    document.getElementById('wifiUrlBox').textContent = `http://${window.POS_NETWORK_IP}:${window.POS_NETWORK_PORT || 5000}/mobile-admin.html`;
+    document.getElementById('wifiUrlBox').textContent = `http://${window.POS_NETWORK_IP}:${window.POS_NETWORK_PORT || 5000}/quan-tri.html`;
   }
   if (window.POS_ONLINE_URL) {
-    document.getElementById('onlineUrlBox').textContent = `${window.POS_ONLINE_URL}/mobile-admin.html`;
+    document.getElementById('onlineUrlBox').textContent = `${window.POS_ONLINE_URL}/quan-tri.html`;
   } else {
     document.getElementById('onlineUrlBox').textContent = 'Đang tự tạo đường dẫn 4G...';
   }

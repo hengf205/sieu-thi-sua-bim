@@ -21,16 +21,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initReports();
   initSettings();
   navigate('dashboard');
-  DB.initRealtimeSync(() => {
+  const refreshActivePage = () => {
     const active = document.querySelector('.nav-item.active')?.dataset.page;
-    if (active === 'debts') renderDebtTable();
     if (active === 'dashboard') refreshDash();
-  });
-  DB.fetchFromServer().then(() => {
-    const active = document.querySelector('.nav-item.active')?.dataset.page;
+    if (active === 'products') renderProdTable();
+    if (active === 'categories') renderCatTable();
+    if (active === 'orders') renderOrdTable();
     if (active === 'debts') renderDebtTable();
-    if (active === 'dashboard') refreshDash();
-  });
+    if (active === 'reports') genReport();
+    if (active === 'settings') loadSettings();
+  };
+  DB.initRealtimeSync(refreshActivePage);
+  DB.fetchFromServer().then(refreshActivePage);
 
   document.getElementById('btnLogout').onclick = () => {
     sessionStorage.removeItem('pos_auth');
@@ -55,13 +57,35 @@ function initClock() {
 function initSidebar() {
   const sb = document.getElementById('sidebar');
   const mc = document.getElementById('mainContent');
-  const tog = () => { sb.classList.toggle('collapsed'); mc.classList.toggle('expanded'); };
+  const backdrop = document.createElement('button');
+  backdrop.type = 'button';
+  backdrop.className = 'admin-sidebar-backdrop';
+  backdrop.setAttribute('aria-label', 'Đóng menu quản trị');
+  document.body.appendChild(backdrop);
+  const isMobile = () => window.matchMedia('(max-width: 680px)').matches;
+  const closeMobileMenu = () => {
+    sb.classList.remove('mobile-open');
+    backdrop.classList.remove('open');
+  };
+  const tog = () => {
+    if (isMobile()) {
+      const open = sb.classList.toggle('mobile-open');
+      backdrop.classList.toggle('open', open);
+      return;
+    }
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+  };
   const sidebarToggle = document.getElementById('sidebarToggle');
   if (sidebarToggle) sidebarToggle.onclick = tog;
   document.getElementById('menuBtn').onclick = tog;
+  backdrop.onclick = closeMobileMenu;
 
   document.querySelectorAll('.nav-item').forEach(el => {
-    el.onclick = () => navigate(el.dataset.page);
+    el.onclick = () => {
+      navigate(el.dataset.page);
+      closeMobileMenu();
+    };
   });
 }
 
