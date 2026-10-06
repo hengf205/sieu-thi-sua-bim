@@ -413,6 +413,7 @@ function confirmDebt() {
 
   if (!name) { toast('Vui lòng nhập họ tên khách hàng!', 'e'); document.getElementById('debtName').focus(); return; }
   if (!phone) { toast('Vui lòng nhập số điện thoại!', 'e'); document.getElementById('debtPhone').focus(); return; }
+  if (!memo) { toast('Vui lòng nhập đặc điểm để ghi nhớ khách hàng!', 'e'); document.getElementById('debtMemo').focus(); return; }
 
   const total = getCurrentTotal();
   const sub = cart.reduce((s, i) => s + i.price * i.qty, 0);

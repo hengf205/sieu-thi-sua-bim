@@ -344,6 +344,20 @@
         </div>
       </section>
 
+      <!-- ========== DEBTS ========== -->
+      <section class="page" id="page-debts">
+        <div class="stat-grid">
+          <div class="stat-card c-orange"><div class="stat-ico"><i class="fas fa-hourglass-half"></i></div><div><p>Khoản chưa thanh toán</p><h3 id="debtPendingCount">0</h3></div></div>
+          <div class="stat-card c-blue"><div class="stat-ico"><i class="fas fa-hand-holding-usd"></i></div><div><p>Tổng tiền còn nợ</p><h3 id="debtPendingTotal">0 ₫</h3></div></div>
+          <div class="stat-card c-green"><div class="stat-ico"><i class="fas fa-check-circle"></i></div><div><p>Đã thanh toán</p><h3 id="debtPaidCount">0</h3></div></div>
+        </div>
+        <div class="page-bar">
+          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="debtSearch" placeholder="Tìm mã nợ, tên hoặc số điện thoại..." /></div>
+          <select id="debtStatusFilter" class="select-input"><option value="all">Tất cả trạng thái</option><option value="pending">Chưa thanh toán</option><option value="paid">Đã thanh toán</option></select>
+        </div>
+        <div class="card"><table class="tbl"><thead><tr><th>Mã nợ / Thời gian</th><th>Khách hàng</th><th>Đặc điểm ghi nhớ</th><th>Sản phẩm</th><th>Số tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="debtTbody"></tbody></table></div>
+      </section>
+
       <!-- ========== REPORTS ========== -->
       <section class="page" id="page-reports">
         <div class="report-tabs" id="reportTabs">

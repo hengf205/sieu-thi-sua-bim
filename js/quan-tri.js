@@ -17,9 +17,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initProducts();
   initCategories();
   initOrders();
+  initDebts();
   initReports();
   initSettings();
   navigate('dashboard');
+  DB.initRealtimeSync(() => {
+    const active = document.querySelector('.nav-item.active')?.dataset.page;
+    if (active === 'debts') renderDebtTable();
+    if (active === 'dashboard') refreshDash();
+  });
+  DB.fetchFromServer().then(() => {
+    const active = document.querySelector('.nav-item.active')?.dataset.page;
+    if (active === 'debts') renderDebtTable();
+    if (active === 'dashboard') refreshDash();
+  });
 
   document.getElementById('btnLogout').onclick = () => {
     sessionStorage.removeItem('pos_auth');
@@ -68,6 +79,7 @@ function navigate(page) {
     products: 'Quản lý sản phẩm & Mã vạch',
     categories: 'Danh mục sản phẩm',
     orders: 'Lịch sử đơn hàng',
+    debts: 'Quản lý công nợ',
     reports: 'Báo cáo doanh thu',
     settings: 'Cài đặt cửa hàng & Mật khẩu'
   };
@@ -77,6 +89,7 @@ function navigate(page) {
   if (page === 'products') renderProdTable();
   if (page === 'categories') renderCatTable();
   if (page === 'orders') renderOrdTable();
+  if (page === 'debts') renderDebtTable();
 }
 
 /* ---- Modals & Toast ---- */
@@ -105,6 +118,7 @@ const fmtSh = n => n >= 1e9 ? (n / 1e9).toFixed(1) + ' tỷ ₫' : n >= 1e6 ? (n
 const dtStr = iso => new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const today = () => new Date().toISOString().slice(0, 10);
 const payLbl = m => ({ cash: 'Tiền mặt', card: 'Thẻ', transfer: 'Chuyển khoản' }[m] || m);
+const escHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const catName = id => DB.getCats().find(c => c.id === id)?.name || '—';
 const wkNum = d => { const u = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const dn = u.getUTCDay() || 7; u.setUTCDate(u.getUTCDate() + 4 - dn); const ys = new Date(Date.UTC(u.getUTCFullYear(), 0, 1)); return Math.ceil((((u - ys) / 86400000) + 1) / 7); };
 
@@ -457,6 +471,49 @@ function viewOrd(id) {
       </tfoot>
     </table>`;
   openM('modalOrdDetail');
+}
+
+/* ====================================================
+   DEBTS
+   ==================================================== */
+function initDebts() {
+  document.getElementById('debtSearch').addEventListener('input', renderDebtTable);
+  document.getElementById('debtStatusFilter').addEventListener('change', renderDebtTable);
+}
+
+function renderDebtTable() {
+  const all = DB.getDebts().slice().reverse();
+  const pending = all.filter(d => d.status !== 'paid');
+  const q = document.getElementById('debtSearch').value.trim().toLocaleLowerCase('vi');
+  const state = document.getElementById('debtStatusFilter').value;
+  document.getElementById('debtPendingCount').textContent = pending.length;
+  document.getElementById('debtPendingTotal').textContent = fmt(pending.reduce((sum, d) => sum + Number(d.total || 0), 0));
+  document.getElementById('debtPaidCount').textContent = all.filter(d => d.status === 'paid').length;
+  const debts = all.filter(d => {
+    const matchesState = state === 'all' || (state === 'paid' ? d.status === 'paid' : d.status !== 'paid');
+    const haystack = `${d.code || ''} ${d.customerName || ''} ${d.customerPhone || ''}`.toLocaleLowerCase('vi');
+    return matchesState && (!q || haystack.includes(q));
+  });
+  const tb = document.getElementById('debtTbody');
+  tb.innerHTML = debts.length ? debts.map(d => `<tr>
+    <td><strong>${escHtml(d.code)}</strong><br><small>${dtStr(d.at)}</small></td>
+    <td><strong>${escHtml(d.customerName)}</strong><br><a href="tel:${escHtml(d.customerPhone)}">${escHtml(d.customerPhone)}</a></td>
+    <td>${d.customerMemo ? escHtml(d.customerMemo) : '<span style="color:var(--muted)">—</span>'}</td>
+    <td>${(d.items || []).map(i => `${escHtml(i.name)} × ${Number(i.qty || 0)}`).join('<br>')}</td>
+    <td style="font-weight:700;color:var(--primary)">${fmt(d.total)}</td>
+    <td><span class="badge ${d.status === 'paid' ? 'b-green' : 'b-orange'}">${d.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</span>${d.paidAt ? `<br><small>${dtStr(d.paidAt)}</small>` : ''}</td>
+    <td>${d.status === 'paid' ? '—' : `<button class="btn-primary btn-sm" onclick="markDebtPaid(${Number(d.id)})"><i class="fas fa-check"></i> Đã thu tiền</button>`}</td>
+  </tr>`).join('') : '<tr><td colspan="7" class="empty-state">Chưa có khoản nợ phù hợp</td></tr>';
+}
+
+function markDebtPaid(id) {
+  const debt = DB.getDebt(id);
+  if (!debt || debt.status === 'paid') return;
+  doConfirm(`Xác nhận khách ${debt.customerName} đã thanh toán khoản nợ ${debt.code} (${fmt(debt.total)})?`, () => {
+    DB.markDebtPaid(id);
+    renderDebtTable();
+    toast(`Đã cập nhật ${debt.code} thành đã thanh toán`, 's');
+  });
 }
 
 /* ====================================================
