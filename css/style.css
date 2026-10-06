@@ -199,26 +199,27 @@ button{cursor:pointer;border:none}
 .cat-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
 .product-grid{
-  flex:1;overflow-y:auto;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;padding:2px;
+  flex:1;min-height:0;overflow-y:auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));grid-auto-rows:204px;
+  align-content:start;gap:10px;padding:2px;
 }
 .prod-card{
-  background:var(--card);border-radius:var(--radius);padding:11px 10px;cursor:pointer;
-  transition:all .18s;border:2px solid transparent;box-shadow:var(--shadow);
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;position:relative;
+  height:204px;min-width:0;background:var(--card);border-radius:12px;padding:11px 10px;cursor:pointer;
+  transition:all .18s;border:1px solid var(--border);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;position:relative;overflow:hidden;
 }
-.prod-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.prod-card:hover{border-color:#93c5fd;transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .prod-card.oos{opacity:.5;cursor:not-allowed}
 .prod-card .p-img{
-  width:72px;height:72px;border-radius:8px;overflow:hidden;
+  width:64px;height:64px;border-radius:10px;overflow:hidden;
   background:var(--bg);display:flex;align-items:center;justify-content:center;
-  font-size:1.7rem;color:var(--muted);flex-shrink:0;
+  font-size:1.55rem;color:var(--muted);flex-shrink:0;
 }
 .prod-card .p-img img{width:100%;height:100%;object-fit:cover}
-.prod-card .p-name{font-size:.78rem;font-weight:600;line-height:1.3;-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-.prod-card .p-price{font-size:.85rem;font-weight:800;color:var(--primary)}
-.prod-card .p-barcode{font-size:.68rem;color:var(--muted);font-family:monospace}
-.prod-card .p-stock{font-size:.68rem;color:var(--muted)}
+.prod-card .p-name{width:100%;height:2.5em;font-size:.8rem;font-weight:650;line-height:1.25;-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.prod-card .p-price{font-size:.9rem;line-height:1.2;font-weight:800;color:var(--primary);white-space:nowrap}
+.prod-card .p-barcode{max-width:100%;font-size:.68rem;color:var(--muted);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-card .p-stock{font-size:.68rem;color:var(--muted);white-space:nowrap}
 .oos-badge{position:absolute;top:5px;right:5px;background:var(--danger);color:#fff;font-size:.62rem;padding:2px 6px;border-radius:4px;font-weight:700}
 
 /* ---- CART ---- */

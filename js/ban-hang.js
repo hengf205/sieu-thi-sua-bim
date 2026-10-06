@@ -15,6 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initScannerAndSearch();
   initCartListeners();
   initModals();
+  DB.fetchFromServer().then(loaded => {
+    if (!loaded) return;
+    refreshCatBar();
+    renderProdGrid();
+  });
 });
 
 /* ---- Clock ---- */
