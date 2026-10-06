@@ -199,6 +199,9 @@ const DB = {
     const prods = this.getProds();
     [[0, 3], [1, 6], [2, 8]].forEach(([pi, di]) => {
       const p = prods[pi];
+      // Some stores start with an empty product catalog. Skip demo orders
+      // whose source product does not exist instead of aborting app startup.
+      if (!p) return;
       const d = new Date();
       d.setDate(d.getDate() - di);
       const items = [{ pid: p.id, name: p.name, price: p.price, qty: 2, unit: p.unit }];

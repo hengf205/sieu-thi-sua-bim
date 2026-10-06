@@ -56,7 +56,8 @@ function initSidebar() {
   const sb = document.getElementById('sidebar');
   const mc = document.getElementById('mainContent');
   const tog = () => { sb.classList.toggle('collapsed'); mc.classList.toggle('expanded'); };
-  document.getElementById('sidebarToggle').onclick = tog;
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  if (sidebarToggle) sidebarToggle.onclick = tog;
   document.getElementById('menuBtn').onclick = tog;
 
   document.querySelectorAll('.nav-item').forEach(el => {
