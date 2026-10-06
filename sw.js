@@ -1,6 +1,6 @@
 // Bump this name whenever the app shell changes so installed clients discard
 // their previous UI and activate the updated files.
-const CACHE_NAME = 'hoangnam-pos-v6';
+const CACHE_NAME = 'hoangnam-pos-v8';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

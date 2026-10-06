@@ -474,14 +474,19 @@
           <div class="img-upload-area" id="imgUploadArea">
             <div class="img-preview" id="imgPreview">
               <i class="fas fa-image"></i>
-              <p>Nhấn để chọn ảnh</p>
+              <p>Chọn ảnh sản phẩm</p>
               <small>JPG, PNG, WEBP – max 2MB</small>
             </div>
-        <input type="file" id="imgFile" accept="image/*" capture="environment" style="display:none" />
+            <input type="file" id="imgFile" accept="image/*" hidden />
+            <input type="file" id="imgCameraFile" accept="image/*" capture="environment" hidden />
             <div class="img-btns">
-              <button class="btn-secondary btn-sm" id="btnPickImg"><i class="fas fa-upload"></i> Chọn ảnh</button>
-              <button class="btn-secondary btn-sm" id="btnClearImg"><i class="fas fa-times"></i> Xóa</button>
+              <button class="btn-secondary btn-sm" id="btnPickImg" type="button"><i class="fas fa-images"></i> Thư viện</button>
+              <button class="btn-secondary btn-sm" id="btnCameraImg" type="button"><i class="fas fa-camera"></i> Chụp ảnh</button>
+              <button class="btn-secondary btn-sm" id="btnGoogleImageSearch" type="button"><i class="fab fa-google"></i> Google Hình ảnh</button>
+              <button class="btn-secondary btn-sm" id="btnSearchOnlineImg" type="button"><i class="fas fa-globe"></i> Kho ảnh mở</button>
+              <button class="btn-secondary btn-sm" id="btnClearImg" type="button"><i class="fas fa-times"></i> Xóa</button>
             </div>
+            <small class="image-url-help">Google mở ở tab mới. Lưu ảnh về máy rồi chọn Thư viện, hoặc dán URL ảnh bên dưới.</small>
             <div class="form-g mt8">
               <label>Hoặc nhập URL ảnh</label>
               <input type="text" id="prodImgUrl" placeholder="https://..." />
@@ -536,6 +541,26 @@
         <button class="btn-secondary" data-close="modalProd">Hủy</button>
         <button class="btn-primary" id="btnSaveProd"><i class="fas fa-save"></i> Lưu sản phẩm</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Search openly licensed product images -->
+  <div class="overlay" id="modalImageSearch">
+    <div class="modal modal-image-search">
+      <div class="modal-hd">
+        <h3><i class="fas fa-images"></i> Tìm ảnh sản phẩm trên mạng</h3>
+        <button class="icon-btn" data-close="modalImageSearch" aria-label="Đóng"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-bd">
+        <div class="online-image-searchbar">
+          <input id="onlineImageQuery" type="search" placeholder="Nhập tên sản phẩm cần tìm..." />
+          <button class="btn-primary" id="btnRunImageSearch" type="button"><i class="fas fa-search"></i> Tìm ảnh</button>
+        </div>
+        <p class="online-image-note">Ảnh tìm từ Openverse có giấy phép mở. Vui lòng xem thông tin tác giả và giấy phép trước khi dùng.</p>
+        <p class="online-image-status" id="onlineImageStatus" aria-live="polite"></p>
+        <div class="online-image-results" id="onlineImageResults"></div>
+      </div>
+      <div class="modal-ft"><button class="btn-secondary" data-close="modalImageSearch">Đóng</button></div>
     </div>
   </div>
 

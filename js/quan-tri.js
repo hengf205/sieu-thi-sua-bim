@@ -6,6 +6,8 @@ let editProdId = null;
 let editCatId = null;
 let confirmCb = null;
 let prodImgData = '';
+let prodImgCredit = null;
+let imageSearchAbort = null;
 let rChart = null, wChart = null, tpChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -218,26 +220,122 @@ function initProducts() {
   const imgFile = document.getElementById('imgFile');
   const urlInp = document.getElementById('prodImgUrl');
 
+  const cameraFile = document.getElementById('imgCameraFile');
   document.getElementById('btnPickImg').onclick = () => imgFile.click();
+  document.getElementById('btnCameraImg').onclick = () => cameraFile.click();
+  document.getElementById('btnGoogleImageSearch').onclick = searchGoogleProductImages;
+  document.getElementById('btnSearchOnlineImg').onclick = openOnlineImageSearch;
+  document.getElementById('btnRunImageSearch').onclick = searchOnlineImages;
+  document.getElementById('onlineImageQuery').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); searchOnlineImages(); }
+  });
   document.getElementById('imgUploadArea').querySelector('.img-preview').onclick = () => imgFile.click();
 
-  imgFile.onchange = e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    if (f.size > 2 * 1024 * 1024) { toast('Ảnh quá lớn! Tối đa 2MB', 'e'); return; }
-    const reader = new FileReader();
-    reader.onload = ev => { prodImgData = ev.target.result; urlInp.value = ''; showImgPrev(prodImgData); };
-    reader.readAsDataURL(f);
-  };
+  imgFile.onchange = e => readProductImage(e.target.files[0], e.target);
+  cameraFile.onchange = e => readProductImage(e.target.files[0], e.target);
 
   urlInp.addEventListener('input', () => {
+    prodImgCredit = null;
     if (urlInp.value) { prodImgData = ''; showImgPrev(urlInp.value); }
     else if (!prodImgData) { showImgPrev(''); }
   });
 
   document.getElementById('btnClearImg').onclick = () => {
-    prodImgData = ''; urlInp.value = ''; imgFile.value = ''; showImgPrev('');
+    prodImgData = ''; prodImgCredit = null; urlInp.value = ''; imgFile.value = ''; cameraFile.value = ''; showImgPrev('');
   };
+}
+
+function searchGoogleProductImages() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { toast('Nhập tên sản phẩm trước để tìm ảnh phù hợp.', 'w'); document.getElementById('fName').focus(); return; }
+  const url = new URL('https://www.google.com/search');
+  url.searchParams.set('tbm', 'isch');
+  url.searchParams.set('q', name);
+  window.open(url.toString(), '_blank', 'noopener');
+}
+
+function readProductImage(file, input) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { toast('Hãy chọn tệp ảnh hợp lệ.', 'e'); input.value = ''; return; }
+  if (file.size > 2 * 1024 * 1024) { toast('Ảnh quá lớn! Tối đa 2MB', 'e'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    prodImgData = ev.target.result;
+    prodImgCredit = null;
+    document.getElementById('prodImgUrl').value = '';
+    showImgPrev(prodImgData);
+  };
+  reader.onerror = () => toast('Không thể đọc ảnh này. Hãy thử ảnh khác.', 'e');
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function openOnlineImageSearch() {
+  const query = document.getElementById('fName').value.trim();
+  document.getElementById('onlineImageQuery').value = query;
+  document.getElementById('onlineImageResults').replaceChildren();
+  document.getElementById('onlineImageStatus').textContent = query ? '' : 'Nhập tên sản phẩm để tìm ảnh.';
+  openM('modalImageSearch');
+  if (query) searchOnlineImages();
+  else setTimeout(() => document.getElementById('onlineImageQuery').focus(), 100);
+}
+
+async function searchOnlineImages() {
+  const query = document.getElementById('onlineImageQuery').value.trim();
+  const status = document.getElementById('onlineImageStatus');
+  const results = document.getElementById('onlineImageResults');
+  if (!query) { status.textContent = 'Nhập tên sản phẩm để tìm ảnh.'; return; }
+  if (imageSearchAbort) imageSearchAbort.abort();
+  imageSearchAbort = new AbortController();
+  status.textContent = 'Đang tìm ảnh…';
+  results.replaceChildren();
+  try {
+    const params = new URLSearchParams({ q: query, page_size: '18', license: 'cc0,pdm,by,by-sa' });
+    const response = await fetch(`https://api.openverse.org/v1/images/?${params}`, { signal: imageSearchAbort.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const items = (data.results || []).filter(item => item.thumbnail && item.url);
+    if (!items.length) { status.textContent = 'Chưa tìm thấy ảnh phù hợp. Thử từ khóa ngắn hơn.'; return; }
+    status.textContent = `Tìm thấy ${items.length} ảnh. Chọn ảnh để gắn vào sản phẩm.`;
+    items.forEach(item => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'online-image-card';
+      card.title = 'Dùng ảnh này';
+      const image = document.createElement('img');
+      image.src = item.thumbnail;
+      image.alt = item.title || 'Ảnh sản phẩm';
+      image.loading = 'lazy';
+      const caption = document.createElement('span');
+      caption.className = 'online-image-caption';
+      caption.textContent = item.title || 'Ảnh không có tiêu đề';
+      const details = document.createElement('small');
+      details.textContent = [item.creator, item.license?.toUpperCase()].filter(Boolean).join(' · ') || 'Giấy phép mở';
+      card.append(image, caption, details);
+      card.onclick = () => selectOnlineImage(item);
+      results.appendChild(card);
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') return;
+    status.textContent = 'Không kết nối được kho ảnh. Hãy kiểm tra Internet rồi thử lại.';
+  }
+}
+
+function selectOnlineImage(item) {
+  const imageUrl = item.url || item.thumbnail;
+  if (!/^https:\/\//i.test(imageUrl)) { toast('Nguồn ảnh không an toàn, vui lòng chọn ảnh khác.', 'e'); return; }
+  prodImgData = '';
+  prodImgCredit = {
+    title: item.title || '',
+    creator: item.creator || '',
+    source: item.foreign_landing_url || item.detail_url || item.url,
+    license: item.license || '',
+    licenseUrl: item.license_url || ''
+  };
+  document.getElementById('prodImgUrl').value = imageUrl;
+  showImgPrev(imageUrl);
+  closeM('modalImageSearch');
+  toast('Đã chọn ảnh. Nhớ lưu sản phẩm để áp dụng.', 's');
 }
 
 function showImgPrev(src) {
@@ -254,6 +352,7 @@ function showImgPrev(src) {
 function openProdModal(id = null) {
   editProdId = id;
   prodImgData = '';
+  prodImgCredit = null;
   document.getElementById('modalProdTitle').textContent = id ? 'Sửa thông tin sản phẩm' : 'Thêm sản phẩm mới';
   const cats = DB.getCats();
   document.getElementById('fCat').innerHTML = cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -272,6 +371,7 @@ function openProdModal(id = null) {
     document.getElementById('fDesc').value = p.desc || '';
     document.getElementById('fStatus').value = p.status || 'active';
     const imgSrc = p.img || '';
+    prodImgCredit = p.imgCredit || null;
     if (imgSrc.startsWith('data:')) prodImgData = imgSrc;
     document.getElementById('prodImgUrl').value = imgSrc.startsWith('data:') ? '' : imgSrc;
     showImgPrev(imgSrc);
@@ -287,6 +387,7 @@ function openProdModal(id = null) {
     document.getElementById('fStatus').value = 'active';
     document.getElementById('prodImgUrl').value = '';
     document.getElementById('imgFile').value = '';
+    document.getElementById('imgCameraFile').value = '';
     showImgPrev('');
   }
 
@@ -315,6 +416,7 @@ function saveProd() {
     min: parseInt(document.getElementById('fMinStock').value) || 5,
     desc: document.getElementById('fDesc').value.trim(),
     img,
+    imgCredit: img && !img.startsWith('data:') ? prodImgCredit : null,
     status: document.getElementById('fStatus').value,
   };
 
