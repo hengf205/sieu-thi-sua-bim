@@ -37,7 +37,7 @@
       "unit": "Hộp",
       "minStock": 3,
       "code": "SP00001",
-      "stock": 17,
+      "stock": 16,
       "price": 350000,
       "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
     },
@@ -51,7 +51,7 @@
       "unit": "Bịch",
       "minStock": 5,
       "code": "SP00002",
-      "stock": 26,
+      "stock": 25,
       "price": 230000,
       "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
     },
@@ -65,7 +65,7 @@
       "unit": "Lốc",
       "minStock": 8,
       "code": "SP00003",
-      "stock": 37,
+      "stock": 36,
       "price": 85000,
       "desc": "Sản phẩm mẫu để kiểm tra bán hàng"
     },
@@ -150,7 +150,7 @@
       "img": "",
       "code": "SP00009",
       "name": "Cháo ăn dặm mẫu",
-      "stock": 20,
+      "stock": 18,
       "cost": 17000,
       "price": 28000,
       "status": "active",
@@ -456,6 +456,84 @@
       "id": 11,
       "code": "HD00011",
       "at": "2026-10-06T16:56:35.560Z"
+    },
+    {
+      "items": [
+        {
+          "pid": 9,
+          "name": "Cháo ăn dặm mẫu",
+          "price": 28000,
+          "qty": 2,
+          "unit": "Hộp"
+        },
+        {
+          "pid": 1,
+          "name": "Sữa bột mẫu 1",
+          "price": 350000,
+          "qty": 1,
+          "unit": "Hộp"
+        },
+        {
+          "pid": 2,
+          "name": "Tã bỉm mẫu M",
+          "price": 230000,
+          "qty": 1,
+          "unit": "Bịch"
+        },
+        {
+          "pid": 3,
+          "name": "Sữa nước mẫu",
+          "price": 85000,
+          "qty": 1,
+          "unit": "Lốc"
+        }
+      ],
+      "sub": 721000,
+      "disc": 0,
+      "discT": "amount",
+      "total": 721000,
+      "pay": "cash",
+      "cashIn": 721000,
+      "change": 0,
+      "customerName": "Cô Liên",
+      "customerPhone": "1234",
+      "customerMemo": "Liên xòn",
+      "debtCode": "CN00005",
+      "id": 12,
+      "code": "HD00012",
+      "at": "2026-10-06T17:03:13.376Z"
+    },
+    {
+      "items": [
+        {
+          "name": "Sữa nước mẫu",
+          "price": 85000,
+          "unit": "Lốc",
+          "pid": 3,
+          "qty": 1
+        },
+        {
+          "name": "Khăn ướt mẫu",
+          "price": 38000,
+          "unit": "Gói",
+          "pid": 8,
+          "qty": 2
+        }
+      ],
+      "sub": 161000,
+      "disc": 11000,
+      "discT": "amount",
+      "total": 150000,
+      "pay": "cash",
+      "cashIn": 150000,
+      "change": 0,
+      "customerName": "Khách mẫu mua nhiều mặt hàng",
+      "customerPhone": "0000000004",
+      "customerMemo": "Nhận biết: khách quen khu vực gần cửa hàng",
+      "debtCode": "CN00004",
+      "id": 13,
+      "code": "HD00013",
+      "at": "2026-10-06T17:03:15.240Z"
     }
   ],
   "set": {
@@ -469,8 +547,8 @@
     "c": 5,
     "p": 9,
     "prod_code_seq": 9,
-    "debt": 4,
-    "o": 11
+    "debt": 5,
+    "o": 13
   },
   "debt": [
     {
@@ -556,11 +634,11 @@
     },
     {
       "customerPhone": "0000000004",
-      "orderCode": "",
+      "orderCode": "HD00013",
       "at": "2026-10-06T16:54:32.5314384Z",
-      "status": "pending",
+      "status": "paid",
       "discT": "amount",
-      "paidAt": null,
+      "paidAt": "2026-10-06T17:03:15.240Z",
       "note": "Dữ liệu thử nghiệm",
       "items": [
         {
@@ -578,8 +656,8 @@
           "qty": 2
         }
       ],
-      "paidBy": "",
-      "orderId": null,
+      "paidBy": "cash",
+      "orderId": 13,
       "customerMemo": "Nhận biết: khách quen khu vực gần cửa hàng",
       "total": 150000,
       "disc": 11000,
@@ -587,6 +665,54 @@
       "id": 4,
       "code": "CN00004",
       "sub": 161000
+    },
+    {
+      "customerName": "Cô Liên",
+      "customerPhone": "1234",
+      "customerMemo": "Liên xòn",
+      "items": [
+        {
+          "pid": 9,
+          "name": "Cháo ăn dặm mẫu",
+          "price": 28000,
+          "qty": 2,
+          "unit": "Hộp"
+        },
+        {
+          "pid": 1,
+          "name": "Sữa bột mẫu 1",
+          "price": 350000,
+          "qty": 1,
+          "unit": "Hộp"
+        },
+        {
+          "pid": 2,
+          "name": "Tã bỉm mẫu M",
+          "price": 230000,
+          "qty": 1,
+          "unit": "Bịch"
+        },
+        {
+          "pid": 3,
+          "name": "Sữa nước mẫu",
+          "price": 85000,
+          "qty": 1,
+          "unit": "Lốc"
+        }
+      ],
+      "sub": 721000,
+      "disc": 0,
+      "discT": "amount",
+      "total": 721000,
+      "id": 5,
+      "code": "CN00005",
+      "at": "2026-10-06T17:02:56.122Z",
+      "status": "paid",
+      "paidAt": "2026-10-06T17:03:13.377Z",
+      "note": "",
+      "paidBy": "cash",
+      "orderId": 12,
+      "orderCode": "HD00012"
     }
   ]
 }
