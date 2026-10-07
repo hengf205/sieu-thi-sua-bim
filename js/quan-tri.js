@@ -7,7 +7,6 @@ let editCatId = null;
 let confirmCb = null;
 let prodImgData = '';
 let prodImgCredit = null;
-let imageSearchAbort = null;
 let rChart = null, wChart = null, tpChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -128,7 +127,10 @@ function initModals() {
 }
 
 function openM(id) { document.getElementById(id).classList.add('open') }
-function closeM(id) { document.getElementById(id).classList.remove('open') }
+function closeM(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modalProdBarcodeScanner') stopProdBarcodeScanner();
+}
 function doConfirm(msg, cb) { document.getElementById('confirmMsg').textContent = msg; confirmCb = cb; openM('modalConfirm'); }
 
 function toast(msg, type = 's', ms = 2800) {
@@ -213,25 +215,20 @@ function buildRecent(ords) {
 function initProducts() {
   document.getElementById('btnAddProd').onclick = () => openProdModal();
   document.getElementById('btnSaveProd').onclick = saveProd;
+  document.getElementById('btnScanProdBarcode').onclick = openProdBarcodeScanner;
   document.getElementById('prodSearch').addEventListener('input', renderProdTable);
   document.getElementById('prodCatFilter').addEventListener('change', renderProdTable);
 
   // Image Upload Logic
-  const imgFile = document.getElementById('imgFile');
   const urlInp = document.getElementById('prodImgUrl');
 
   const cameraFile = document.getElementById('imgCameraFile');
-  document.getElementById('btnPickImg').onclick = () => imgFile.click();
   document.getElementById('btnCameraImg').onclick = () => cameraFile.click();
   document.getElementById('btnGoogleImageSearch').onclick = searchGoogleProductImages;
-  document.getElementById('btnSearchOnlineImg').onclick = openOnlineImageSearch;
-  document.getElementById('btnRunImageSearch').onclick = searchOnlineImages;
-  document.getElementById('onlineImageQuery').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); searchOnlineImages(); }
-  });
-  document.getElementById('imgUploadArea').querySelector('.img-preview').onclick = () => imgFile.click();
+  const preview = document.getElementById('imgPreview');
+  preview.onclick = () => cameraFile.click();
+  preview.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cameraFile.click(); } };
 
-  imgFile.onchange = e => readProductImage(e.target.files[0], e.target);
   cameraFile.onchange = e => readProductImage(e.target.files[0], e.target);
 
   urlInp.addEventListener('input', () => {
@@ -241,8 +238,130 @@ function initProducts() {
   });
 
   document.getElementById('btnClearImg').onclick = () => {
-    prodImgData = ''; prodImgCredit = null; urlInp.value = ''; imgFile.value = ''; cameraFile.value = ''; showImgPrev('');
+    prodImgData = ''; prodImgCredit = null; urlInp.value = ''; cameraFile.value = ''; showImgPrev('');
   };
+}
+
+/* ---- Product barcode camera scanner ---- */
+let prodBarcodeStream = null;
+let prodBarcodeScanFrame = null;
+let prodBarcodeReaderControls = null;
+let prodBarcodeDetecting = false;
+let prodBarcodeZXingLoad = null;
+
+function isProdBarcodeScannerOpen() {
+  return document.getElementById('modalProdBarcodeScanner').classList.contains('open');
+}
+
+async function openProdBarcodeScanner() {
+  openM('modalProdBarcodeScanner');
+  const status = document.getElementById('prodScannerStatus');
+  const video = document.getElementById('prodBarcodeVideo');
+  const videoWrap = document.getElementById('prodScannerVideoWrap');
+  videoWrap.classList.remove('scanner-unavailable');
+  status.textContent = 'Đang mở camera…';
+
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+    status.textContent = 'Quét camera cần mở trang bằng HTTPS. Bạn vẫn có thể nhập mã vạch.';
+    videoWrap.classList.add('scanner-unavailable');
+    return;
+  }
+
+  try {
+    prodBarcodeStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' } }
+    });
+    video.srcObject = prodBarcodeStream;
+    await video.play();
+    if (!isProdBarcodeScannerOpen()) { stopProdBarcodeScanner(); return; }
+
+    if ('BarcodeDetector' in window) {
+      let formats = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf', 'codabar'];
+      if (BarcodeDetector.getSupportedFormats) {
+        const supported = await BarcodeDetector.getSupportedFormats();
+        formats = formats.filter(format => supported.includes(format));
+      }
+      if (formats.length) {
+        const detector = new BarcodeDetector({ formats });
+        status.textContent = 'Đưa mã vạch vào khung để tự động quét.';
+        scanProdBarcodeFrame(detector);
+        return;
+      }
+    }
+    await startProdBarcodeZXing(video);
+  } catch (error) {
+    status.textContent = error.name === 'NotAllowedError'
+      ? 'Camera chưa được cấp quyền. Hãy cho phép trình duyệt truy cập camera rồi thử lại.'
+      : 'Không mở được camera. Hãy kiểm tra quyền camera của trình duyệt rồi thử lại.';
+    videoWrap.classList.add('scanner-unavailable');
+    console.warn('[POS] Product camera scanner unavailable:', error);
+  }
+}
+
+async function scanProdBarcodeFrame(detector) {
+  if (!isProdBarcodeScannerOpen() || !prodBarcodeStream) return;
+  if (!prodBarcodeDetecting) {
+    prodBarcodeDetecting = true;
+    try {
+      const codes = await detector.detect(document.getElementById('prodBarcodeVideo'));
+      if (codes.length && codes[0].rawValue) {
+        handleProdBarcodeScan(codes[0].rawValue);
+        return;
+      }
+    } catch (_) { /* Wait for another camera frame. */ }
+    prodBarcodeDetecting = false;
+  }
+  prodBarcodeScanFrame = requestAnimationFrame(() => scanProdBarcodeFrame(detector));
+}
+
+async function loadProdBarcodeZXing() {
+  if (window.ZXingBrowser) return window.ZXingBrowser;
+  if (!prodBarcodeZXingLoad) {
+    prodBarcodeZXingLoad = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@zxing/browser@0.2.1';
+      script.onload = () => window.ZXingBrowser ? resolve(window.ZXingBrowser) : reject(new Error('ZXing unavailable'));
+      script.onerror = () => reject(new Error('Could not load barcode reader'));
+      document.head.appendChild(script);
+    });
+  }
+  return prodBarcodeZXingLoad;
+}
+
+async function startProdBarcodeZXing(video) {
+  const status = document.getElementById('prodScannerStatus');
+  status.textContent = 'Đang tải bộ đọc mã vạch…';
+  const zxing = await loadProdBarcodeZXing();
+  if (!isProdBarcodeScannerOpen()) return;
+  status.textContent = 'Đưa mã vạch vào khung để tự động quét.';
+  const reader = new zxing.BrowserMultiFormatReader();
+  prodBarcodeReaderControls = await reader.decodeFromVideoElement(video, result => {
+    if (result) handleProdBarcodeScan(result.getText());
+  });
+}
+
+function handleProdBarcodeScan(value) {
+  if (!isProdBarcodeScannerOpen()) return;
+  const code = String(value || '').trim();
+  if (!code) return;
+  document.getElementById('fBarcode').value = code;
+  stopProdBarcodeScanner();
+  closeM('modalProdBarcodeScanner');
+  document.getElementById('fBarcode').focus();
+  toast('Đã điền mã vạch vào biểu mẫu sản phẩm.', 's');
+}
+
+function stopProdBarcodeScanner() {
+  if (prodBarcodeScanFrame) cancelAnimationFrame(prodBarcodeScanFrame);
+  prodBarcodeScanFrame = null;
+  prodBarcodeDetecting = false;
+  if (prodBarcodeReaderControls) prodBarcodeReaderControls.stop();
+  prodBarcodeReaderControls = null;
+  if (prodBarcodeStream) prodBarcodeStream.getTracks().forEach(track => track.stop());
+  prodBarcodeStream = null;
+  const video = document.getElementById('prodBarcodeVideo');
+  if (video) video.srcObject = null;
 }
 
 function searchGoogleProductImages() {
@@ -270,74 +389,6 @@ function readProductImage(file, input) {
   input.value = '';
 }
 
-function openOnlineImageSearch() {
-  const query = document.getElementById('fName').value.trim();
-  document.getElementById('onlineImageQuery').value = query;
-  document.getElementById('onlineImageResults').replaceChildren();
-  document.getElementById('onlineImageStatus').textContent = query ? '' : 'Nhập tên sản phẩm để tìm ảnh.';
-  openM('modalImageSearch');
-  if (query) searchOnlineImages();
-  else setTimeout(() => document.getElementById('onlineImageQuery').focus(), 100);
-}
-
-async function searchOnlineImages() {
-  const query = document.getElementById('onlineImageQuery').value.trim();
-  const status = document.getElementById('onlineImageStatus');
-  const results = document.getElementById('onlineImageResults');
-  if (!query) { status.textContent = 'Nhập tên sản phẩm để tìm ảnh.'; return; }
-  if (imageSearchAbort) imageSearchAbort.abort();
-  imageSearchAbort = new AbortController();
-  status.textContent = 'Đang tìm ảnh…';
-  results.replaceChildren();
-  try {
-    const params = new URLSearchParams({ q: query, page_size: '18', license: 'cc0,pdm,by,by-sa' });
-    const response = await fetch(`https://api.openverse.org/v1/images/?${params}`, { signal: imageSearchAbort.signal });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    const items = (data.results || []).filter(item => item.thumbnail && item.url);
-    if (!items.length) { status.textContent = 'Chưa tìm thấy ảnh phù hợp. Thử từ khóa ngắn hơn.'; return; }
-    status.textContent = `Tìm thấy ${items.length} ảnh. Chọn ảnh để gắn vào sản phẩm.`;
-    items.forEach(item => {
-      const card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'online-image-card';
-      card.title = 'Dùng ảnh này';
-      const image = document.createElement('img');
-      image.src = item.thumbnail;
-      image.alt = item.title || 'Ảnh sản phẩm';
-      image.loading = 'lazy';
-      const caption = document.createElement('span');
-      caption.className = 'online-image-caption';
-      caption.textContent = item.title || 'Ảnh không có tiêu đề';
-      const details = document.createElement('small');
-      details.textContent = [item.creator, item.license?.toUpperCase()].filter(Boolean).join(' · ') || 'Giấy phép mở';
-      card.append(image, caption, details);
-      card.onclick = () => selectOnlineImage(item);
-      results.appendChild(card);
-    });
-  } catch (error) {
-    if (error.name === 'AbortError') return;
-    status.textContent = 'Không kết nối được kho ảnh. Hãy kiểm tra Internet rồi thử lại.';
-  }
-}
-
-function selectOnlineImage(item) {
-  const imageUrl = item.url || item.thumbnail;
-  if (!/^https:\/\//i.test(imageUrl)) { toast('Nguồn ảnh không an toàn, vui lòng chọn ảnh khác.', 'e'); return; }
-  prodImgData = '';
-  prodImgCredit = {
-    title: item.title || '',
-    creator: item.creator || '',
-    source: item.foreign_landing_url || item.detail_url || item.url,
-    license: item.license || '',
-    licenseUrl: item.license_url || ''
-  };
-  document.getElementById('prodImgUrl').value = imageUrl;
-  showImgPrev(imageUrl);
-  closeM('modalImageSearch');
-  toast('Đã chọn ảnh. Nhớ lưu sản phẩm để áp dụng.', 's');
-}
-
 function showImgPrev(src) {
   const prev = document.getElementById('imgPreview');
   if (src) {
@@ -345,7 +396,7 @@ function showImgPrev(src) {
     prev.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover" onerror="showImgPrev('')"/>`;
   } else {
     prev.classList.remove('has-img');
-    prev.innerHTML = `<i class="fas fa-image"></i><p>Nhấn để chọn ảnh</p><small>JPG, PNG, WEBP – max 2MB</small>`;
+    prev.innerHTML = `<i class="fas fa-camera"></i><p>Nhấn để chụp ảnh</p><small>JPG, PNG, WEBP – max 2MB</small>`;
   }
 }
 
@@ -386,7 +437,6 @@ function openProdModal(id = null) {
     document.getElementById('fMinStock').value = 5;
     document.getElementById('fStatus').value = 'active';
     document.getElementById('prodImgUrl').value = '';
-    document.getElementById('imgFile').value = '';
     document.getElementById('imgCameraFile').value = '';
     showImgPrev('');
   }

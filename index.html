@@ -43,18 +43,6 @@
     .lcard.admin i{color:#6ee7b7}
     .lcard.admin:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(5,150,105,.5)}
 
-    /* NETWORK IP & 4G BANNER */
-    .network-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 620px; width: 100%; margin-bottom: 16px; }
-    .network-banner {
-      background: rgba(30,41,59,.9); border: 1.5px solid rgba(96,165,250,.3); border-radius: 16px;
-      padding: 14px 18px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.3); backdrop-filter: blur(8px);
-    }
-    .network-banner-title { font-size: .85rem; font-weight: 700; color: #60a5fa; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .network-url-box { font-family: monospace; font-size: 1rem; font-weight: 800; color: #34d399; background: rgba(0,0,0,.3); padding: 6px 10px; border-radius: 8px; display: inline-block; margin: 4px 0; border: 1px solid rgba(52,211,153,.3); user-select: all; word-break: break-all; }
-    .network-desc { font-size: .74rem; color: #94a3b8; line-height: 1.4; }
-
-    .footer-note{font-size:.76rem;color:#64748b;text-align:center}
-
     /* Password overlay */
     .pass-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
     .pass-overlay.open{display:flex}
@@ -71,7 +59,7 @@
     .pass-btns .ok{background:#059669;color:#fff}
     .pass-btns .ok:hover{background:#047857}
 
-    @media(max-width:600px){.network-grid{grid-template-columns:1fr}.cards{flex-direction:column}.lcard{width:100%;max-width:320px}}
+    @media(max-width:600px){.cards{flex-direction:column}.lcard{width:100%;max-width:320px}}
   </style>
 </head>
 <body>
@@ -102,25 +90,6 @@
   </button>
 </div>
 
-<!-- NETWORK IP & 4G/5G ONLINE LINK DISPLAY -->
-<div class="network-grid">
-  <div class="network-banner">
-    <div class="network-banner-title"><i class="fas fa-wifi"></i> KẾT NỐI WI-FI NỘI BỘ</div>
-    <div class="network-desc">Khi điện thoại bắt chung Wi-Fi tại cửa hàng:</div>
-    <div class="network-url-box" id="wifiUrlBox">http://...:5000/quan-tri.html</div>
-  </div>
-
-  <div class="network-banner" style="border-color:rgba(52,211,153,.4)">
-    <div class="network-banner-title" style="color:#34d399"><i class="fas fa-globe"></i> KẾT NỐI 4G / 5G / NGOÀI QUÁN</div>
-    <div class="network-desc">Khi dùng 4G/5G hoặc ở nhà / ngoài đường:</div>
-    <div class="network-url-box" id="onlineUrlBox">Đang khởi tạo...</div>
-  </div>
-</div>
-
-<div class="footer-note">
-  Mật khẩu quản trị mặc định: <strong>1234</strong>
-</div>
-
 <!-- Password modal -->
 <div class="pass-overlay" id="passOverlay">
   <div class="pass-box">
@@ -135,22 +104,8 @@
   </div>
 </div>
 
-<script src="js/network-config.js"></script>
 <script src="js/pwa-register.js"></script>
 <script>
-function renderNetworkUrls() {
-  if (window.POS_NETWORK_IP) {
-    document.getElementById('wifiUrlBox').textContent = `http://${window.POS_NETWORK_IP}:${window.POS_NETWORK_PORT || 5000}/quan-tri.html`;
-  }
-  if (window.POS_ONLINE_URL) {
-    document.getElementById('onlineUrlBox').textContent = `${window.POS_ONLINE_URL}/quan-tri.html`;
-  } else {
-    document.getElementById('onlineUrlBox').textContent = 'Đang tự tạo đường dẫn 4G...';
-  }
-}
-renderNetworkUrls();
-setInterval(renderNetworkUrls, 2000);
-
 // Load store name
 try {
   const s = JSON.parse(localStorage.getItem('pos_set'));
