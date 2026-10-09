@@ -1,6 +1,6 @@
 // Bump this name whenever the app shell changes so installed clients discard
 // their previous UI and activate the updated files.
-const CACHE_NAME = 'hoangnam-pos-v10';
+const CACHE_NAME = 'hoangnam-pos-v11';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   './js/quan-tri.js',
   './manifest.json',
   './icons/icon.svg',
+  './icons/apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
