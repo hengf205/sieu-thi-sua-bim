@@ -37,6 +37,19 @@ if errorlevel 1 (
 )
 
 :OPEN_APP
+:: Start the Cloudflare Tunnel Windows service when it has been installed.
+:: The tunnel token is configured once during cloudflared service installation;
+:: do not store the secret token in this batch file.
+echo Dang kiem tra ket noi Cloudflare Tunnel...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; $service = Get-Service -Name 'cloudflared' -ErrorAction SilentlyContinue; if (-not $service) { exit 2 }; if ($service.Status -ne 'Running') { Start-Service -Name 'cloudflared'; (Get-Service -Name 'cloudflared').WaitForStatus('Running', [TimeSpan]::FromSeconds(15)) }; exit 0"
+if errorlevel 1 (
+  echo Khong the bat Cloudflare Tunnel service.
+  echo POS van chay tai http://localhost:5000, nhung pos.thiepcuoi.click co the chua truy cap duoc.
+  echo Hay cai cloudflared va dang ky tunnel hoangnam-pos thanh Windows service tren may nay.
+) else (
+  echo Cloudflare Tunnel service dang chay.
+)
+
 echo Dang mo giao dien ban hang...
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
   start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app=http://localhost:5000 --start-maximized
