@@ -2,14 +2,13 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { exec, spawn } = require('child_process');
+const { exec } = require('child_process');
 
 const PORT = 5000;
 const PUBLIC_DIR = __dirname;
 const DB_FILE = path.join(PUBLIC_DIR, 'db.json');
 
 let sseClients = [];
-let onlineUrl = '';
 
 // Helper to get local Wi-Fi / LAN IP address
 function getLocalIp() {
@@ -26,21 +25,16 @@ function getLocalIp() {
 
 const LOCAL_IP = getLocalIp();
 
-function updateNetworkConfig() {
-  const networkConfig = `
-    window.POS_NETWORK_IP = "${LOCAL_IP}";
-    window.POS_NETWORK_PORT = ${PORT};
-    window.POS_ONLINE_URL = "${onlineUrl}";
-  `;
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'js', 'network-config.js'), networkConfig);
-}
-
-updateNetworkConfig();
-
 // Initialize db.json if not exists
 if (!fs.existsSync(DB_FILE)) {
   const initialDb = {
-    cat: [],
+    cat: [
+      { id: 1, name: 'Sữa bột', desc: '' },
+      { id: 2, name: 'Tã bỉm', desc: '' },
+      { id: 3, name: 'Sữa nước', desc: '' },
+      { id: 4, name: 'Ăn dặm', desc: '' },
+      { id: 5, name: 'Đồ dùng cho bé', desc: '' }
+    ],
     prod: [],
     ord: [],
     set: {
@@ -50,7 +44,7 @@ if (!fs.existsSync(DB_FILE)) {
       footer: 'Cảm ơn quý khách và hẹn gặp lại!',
       adminPass: '1234'
     },
-    seq: {}
+    seq: { c: 5 }
   };
   fs.writeFileSync(DB_FILE, JSON.stringify(initialDb, null, 2), 'utf-8');
 }
@@ -166,23 +160,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`- PC Desktop App: http://localhost:${PORT}`);
   console.log(`- Wi-Fi Network:  http://${LOCAL_IP}:${PORT}`);
   console.log(`====================================================`);
-
-  // Start localtunnel for 4G/5G / Internet Access anywhere
-  try {
-    const lt = spawn('npx', ['--yes', 'localtunnel', '--port', PORT], { shell: true });
-    lt.stdout.on('data', (data) => {
-      const str = data.toString();
-      const match = str.match(/https:\/\/[a-zA-Z0-9-]+\.loca\.lt/);
-      if (match) {
-        onlineUrl = match[0];
-        console.log(`- 4G/5G Internet Link: ${onlineUrl}/quan-tri.html`);
-        updateNetworkConfig();
-        notifySseClients();
-      }
-    });
-  } catch (e) {
-    console.log('[Tunnel] Could not start localtunnel automatically');
-  }
 
   const appUrl = `http://localhost:${PORT}`;
   const chromeWin = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app="${appUrl}" --start-maximized`;

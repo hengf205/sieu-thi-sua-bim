@@ -205,37 +205,7 @@ const DB = {
   },
   saveSet(d) { this._s(this.K.SET, d) },
 
-  /* ---- Seed Demo Data ---- */
-  seed() {
-    this.fetchFromServer();
-    if (this.getCats().length) return;
-
-    ['Sữa bột', 'Tã bỉm', 'Sữa nước', 'Ăn dặm', 'Đồ dùng cho bé'].forEach(n => this.addCat({ name: n, desc: '' }));
-    const cats = this.getCats();
-
-    const sampleProds = [
-    ];
-
-    sampleProds.forEach(p => this.addProd(p));
-
-    const prods = this.getProds();
-    [[0, 3], [1, 6], [2, 8]].forEach(([pi, di]) => {
-      const p = prods[pi];
-      // Some stores start with an empty product catalog. Skip demo orders
-      // whose source product does not exist instead of aborting app startup.
-      if (!p) return;
-      const d = new Date();
-      d.setDate(d.getDate() - di);
-      const items = [{ pid: p.id, name: p.name, price: p.price, qty: 2, unit: p.unit }];
-      const sub = items.reduce((s, x) => s + x.price * x.qty, 0);
-      const ord = { items, sub, disc: 0, discT: 'amount', total: sub, pay: 'cash', cashIn: sub, change: 0 };
-      const l = this.getOrds();
-      const seq = this.nextId('o');
-      ord.id = seq;
-      ord.code = `HD${String(seq).padStart(5, '0')}`;
-      ord.at = d.toISOString();
-      l.push(ord);
-      this._s(this.K.ORD, l);
-    });
-  }
+  // Load the central database before any screen reads or writes local data.
+  // Startup must never create demo records or push an empty local copy to the server.
+  async seed() { return this.fetchFromServer(); }
 };

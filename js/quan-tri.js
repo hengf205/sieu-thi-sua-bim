@@ -9,8 +9,8 @@ let prodImgData = '';
 let prodImgCredit = null;
 let rChart = null, wChart = null, tpChart = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  DB.seed();
+document.addEventListener('DOMContentLoaded', async () => {
+  await DB.seed();
   initClock();
   initSidebar();
   initModals();
@@ -33,8 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (active === 'settings') loadSettings();
   };
   DB.initRealtimeSync(refreshActivePage);
-  DB.fetchFromServer().then(refreshActivePage);
-
   document.getElementById('btnLogout').onclick = () => {
     sessionStorage.removeItem('pos_auth');
     window.location.href = 'index.html';

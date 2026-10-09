@@ -14,8 +14,8 @@ let rChart = null, wChart = null, tpChart = null;
 /* ====================================================
    BOOT
    ==================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-  DB.seed();
+document.addEventListener('DOMContentLoaded', async () => {
+  await DB.seed();
   clock();
   sidebar();
   modals();

@@ -6,8 +6,8 @@ let cart = [];
 let payMethod = 'cash';
 let confirmCb = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  DB.seed();
+document.addEventListener('DOMContentLoaded', async () => {
+  await DB.seed();
   initClock();
   loadStoreInfo();
   refreshCatBar();
@@ -15,11 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initScannerAndSearch();
   initCartListeners();
   initModals();
-  DB.fetchFromServer().then(loaded => {
-    if (!loaded) return;
-    refreshCatBar();
-    renderProdGrid();
-  });
   DB.initRealtimeSync(() => {
     loadStoreInfo();
     refreshCatBar();
