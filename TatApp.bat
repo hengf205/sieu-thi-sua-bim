@@ -1,16 +1,12 @@
 @echo off
 chcp 65001 >nul
-title Tắt máy chủ POS Hoàng Nam
+title Tat ung dung POS Hoang Nam
 
 echo ================================================
-echo   ĐANG TẮT MÁY CHỦ POS HOÀNG NAM
+echo   DANG TAT UNG DUNG POS HOANG NAM
 echo ================================================
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$windows = @(Get-Process chrome,msedge -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*POS App*' }); foreach ($window in $windows) { $null = $window.CloseMainWindow() }; if ($windows.Count -gt 0) { Write-Output 'Đã đóng cửa sổ POS.' } else { Write-Output 'Không tìm thấy cửa sổ POS đang mở.' }; Start-Sleep -Milliseconds 800; $owners = @(Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique); if ($owners.Count -eq 0) { Write-Output 'Máy chủ POS đã tắt hoặc không chạy.'; exit 0 }; $stopped = $false; foreach ($owner in $owners) { $proc = Get-CimInstance Win32_Process -Filter ('ProcessId = ' + $owner) -ErrorAction SilentlyContinue; if ($proc -and $proc.Name -eq 'node.exe' -and $proc.CommandLine -match 'server\.js') { Stop-Process -Id $owner -Force -ErrorAction Stop; Write-Output ('Đã tắt máy chủ POS (PID ' + $owner + ').'); $stopped = $true } else { Write-Output ('Không dừng PID ' + $owner + ' vì không xác nhận được đây là máy chủ POS.') } }; if (-not $stopped) { exit 1 }"
-if errorlevel 1 (
-  echo Không thể tự xác nhận hoặc tắt máy chủ POS. Hãy kiểm tra quyền Windows và tiến trình đang dùng cổng 5000.
-) else (
-  echo Bạn có thể đóng cửa sổ này.
-)
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0TatApp.ps1"
+if errorlevel 1 echo Co loi khi tat POS. Hay xem thong bao o tren.
 
 pause
