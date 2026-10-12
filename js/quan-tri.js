@@ -5,8 +5,6 @@
 let editProdId = null;
 let editCatId = null;
 let confirmCb = null;
-let prodImgData = '';
-let prodImgCredit = null;
 let rChart = null, wChart = null, tpChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -217,27 +215,6 @@ function initProducts() {
   document.getElementById('prodSearch').addEventListener('input', renderProdTable);
   document.getElementById('prodCatFilter').addEventListener('change', renderProdTable);
 
-  // Image Upload Logic
-  const urlInp = document.getElementById('prodImgUrl');
-
-  const cameraFile = document.getElementById('imgCameraFile');
-  document.getElementById('btnCameraImg').onclick = () => cameraFile.click();
-  document.getElementById('btnGoogleImageSearch').onclick = searchGoogleProductImages;
-  const preview = document.getElementById('imgPreview');
-  preview.onclick = () => cameraFile.click();
-  preview.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cameraFile.click(); } };
-
-  cameraFile.onchange = e => readProductImage(e.target.files[0], e.target);
-
-  urlInp.addEventListener('input', () => {
-    prodImgCredit = null;
-    if (urlInp.value) { prodImgData = ''; showImgPrev(urlInp.value); }
-    else if (!prodImgData) { showImgPrev(''); }
-  });
-
-  document.getElementById('btnClearImg').onclick = () => {
-    prodImgData = ''; prodImgCredit = null; urlInp.value = ''; cameraFile.value = ''; showImgPrev('');
-  };
 }
 
 /* ---- Product barcode camera scanner ---- */
@@ -362,46 +339,8 @@ function stopProdBarcodeScanner() {
   if (video) video.srcObject = null;
 }
 
-function searchGoogleProductImages() {
-  const name = document.getElementById('fName').value.trim();
-  if (!name) { toast('Nhập tên sản phẩm trước để tìm ảnh phù hợp.', 'w'); document.getElementById('fName').focus(); return; }
-  const url = new URL('https://www.google.com/search');
-  url.searchParams.set('tbm', 'isch');
-  url.searchParams.set('q', name);
-  window.open(url.toString(), '_blank', 'noopener');
-}
-
-function readProductImage(file, input) {
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { toast('Hãy chọn tệp ảnh hợp lệ.', 'e'); input.value = ''; return; }
-  if (file.size > 2 * 1024 * 1024) { toast('Ảnh quá lớn! Tối đa 2MB', 'e'); input.value = ''; return; }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    prodImgData = ev.target.result;
-    prodImgCredit = null;
-    document.getElementById('prodImgUrl').value = '';
-    showImgPrev(prodImgData);
-  };
-  reader.onerror = () => toast('Không thể đọc ảnh này. Hãy thử ảnh khác.', 'e');
-  reader.readAsDataURL(file);
-  input.value = '';
-}
-
-function showImgPrev(src) {
-  const prev = document.getElementById('imgPreview');
-  if (src) {
-    prev.classList.add('has-img');
-    prev.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover" onerror="showImgPrev('')"/>`;
-  } else {
-    prev.classList.remove('has-img');
-    prev.innerHTML = `<i class="fas fa-camera"></i><p>Nhấn để chụp ảnh</p><small>JPG, PNG, WEBP – max 2MB</small>`;
-  }
-}
-
 function openProdModal(id = null) {
   editProdId = id;
-  prodImgData = '';
-  prodImgCredit = null;
   document.getElementById('modalProdTitle').textContent = id ? 'Sửa thông tin sản phẩm' : 'Thêm sản phẩm mới';
   const cats = DB.getCats();
   document.getElementById('fCat').innerHTML = cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -419,11 +358,6 @@ function openProdModal(id = null) {
     document.getElementById('fMinStock').value = p.min || 5;
     document.getElementById('fDesc').value = p.desc || '';
     document.getElementById('fStatus').value = p.status || 'active';
-    const imgSrc = p.img || '';
-    prodImgCredit = p.imgCredit || null;
-    if (imgSrc.startsWith('data:')) prodImgData = imgSrc;
-    document.getElementById('prodImgUrl').value = imgSrc.startsWith('data:') ? '' : imgSrc;
-    showImgPrev(imgSrc);
   } else {
     // Auto Generate Code
     document.getElementById('fCode').value = DB.generateProdCode();
@@ -434,9 +368,6 @@ function openProdModal(id = null) {
     ['fCost', 'fPrice', 'fStock'].forEach(f => document.getElementById(f).value = 0);
     document.getElementById('fMinStock').value = 5;
     document.getElementById('fStatus').value = 'active';
-    document.getElementById('prodImgUrl').value = '';
-    document.getElementById('imgCameraFile').value = '';
-    showImgPrev('');
   }
 
   openM('modalProd');
@@ -453,9 +384,6 @@ function saveProd() {
   if (!name) { toast('Vui lòng nhập tên sản phẩm!', 'e'); return; }
   if (!price) { toast('Vui lòng nhập giá bán!', 'e'); return; }
 
-  const urlVal = document.getElementById('prodImgUrl').value.trim();
-  const img = prodImgData || urlVal;
-
   const data = {
     code: document.getElementById('fCode').value.trim(),
     barcode: document.getElementById('fBarcode').value.trim(),
@@ -467,8 +395,6 @@ function saveProd() {
     stock: parseInt(document.getElementById('fStock').value) || 0,
     min: parseInt(document.getElementById('fMinStock').value) || 5,
     desc: document.getElementById('fDesc').value.trim(),
-    img,
-    imgCredit: img && !img.startsWith('data:') ? prodImgCredit : null,
     status: document.getElementById('fStatus').value,
   };
 
