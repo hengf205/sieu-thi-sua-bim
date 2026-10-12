@@ -440,7 +440,11 @@ function openProdModal(id = null) {
   }
 
   openM('modalProd');
-  setTimeout(() => document.getElementById('fBarcode').focus(), 150);
+  // Do not summon the mobile keyboard as soon as the dialog opens. On iOS it
+  // zooms the page and can cover the product form's save button.
+  if (!window.matchMedia('(max-width: 680px), (pointer: coarse)').matches) {
+    setTimeout(() => document.getElementById('fBarcode').focus(), 150);
+  }
 }
 
 function saveProd() {
