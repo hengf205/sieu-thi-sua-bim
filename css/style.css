@@ -379,7 +379,7 @@ button{cursor:pointer;border:none}
   .store-name-tag{display:none}
   .header-center{grid-area:search;display:flex;align-items:center;gap:8px;width:100%;max-width:none;min-width:0;margin:0}
   .barcode-scanner-box{flex:1;min-width:0}
-  .barcode-scanner-box input{height:42px;padding:8px 36px 8px 40px;font-size:.84rem}
+  .barcode-scanner-box input{height:42px;padding:8px 36px 8px 40px;font-size:16px}
   .barcode-scanner-box .scanner-icon{left:12px;font-size:1rem}
   .btn-scan-clear{right:9px}
   .header-right{grid-area:admin;gap:5px}

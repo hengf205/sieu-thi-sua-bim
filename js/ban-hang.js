@@ -47,14 +47,17 @@ function loadStoreInfo() {
 function initScannerAndSearch() {
   const inp = document.getElementById('barcodeInput');
   const btnClear = document.getElementById('btnClearScan');
+  const mobilePOS = window.matchMedia('(max-width: 680px), (pointer: coarse)').matches;
 
-  if (!isScannerOpen()) inp.focus();
-  document.addEventListener('click', (e) => {
-    const isInteractive = ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName) || e.target.closest('.modal');
-    if (!isInteractive) {
-      inp.focus();
-    }
-  });
+  // On phones, keep the camera scan button and page taps from opening the
+  // keyboard. The user can open it intentionally by tapping the input.
+  if (!mobilePOS) {
+    if (!isScannerOpen()) inp.focus();
+    document.addEventListener('click', (e) => {
+      const isInteractive = ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName) || e.target.closest('.modal');
+      if (!isInteractive) inp.focus();
+    });
+  }
 
   inp.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -99,7 +102,7 @@ function initScannerAndSearch() {
 
   btnClear.addEventListener('click', () => {
     inp.value = '';
-    inp.focus();
+    if (!mobilePOS) inp.focus();
     renderProdGrid();
   });
 
@@ -471,7 +474,9 @@ function checkout() {
   calcCart();
   renderProdGrid();
 
-  document.getElementById('barcodeInput').focus();
+  if (!window.matchMedia('(max-width: 680px), (pointer: coarse)').matches) {
+    document.getElementById('barcodeInput').focus();
+  }
 }
 
 /* ---- Receipt ---- */
@@ -577,7 +582,9 @@ function confirmDebt() {
   document.getElementById('cashIn').value = '';
   calcCart();
   renderProdGrid();
-  document.getElementById('barcodeInput').focus();
+  if (!window.matchMedia('(max-width: 680px), (pointer: coarse)').matches) {
+    document.getElementById('barcodeInput').focus();
+  }
 }
 
 function openM(id) { document.getElementById(id).classList.add('open') }
